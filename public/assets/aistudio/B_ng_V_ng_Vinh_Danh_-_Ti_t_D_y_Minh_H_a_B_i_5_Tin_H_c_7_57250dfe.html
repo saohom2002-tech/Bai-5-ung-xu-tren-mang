@@ -1,0 +1,2277 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="dashboard">
+  <meta name="design-style" content="aurora">
+  <title>Bảng Vàng Vinh Danh — Bài 5: Ứng Xử Trên Mạng | Tin học 7 — THCS Tân Bình</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Instrument+Sans:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+
+      /* 1. Aurora Style Tokens */
+      --background: #0c1214;
+      --surface-container-low: #111a1e;
+      --surface-container: #152024;
+      --surface-container-high: #1c2a30;
+
+      --on-surface: #edf3f5;
+      --on-surface-variant: #94a8b0;
+
+      --outline: #38515c;
+      --outline-variant: #213138;
+
+      --primary: #63c7d6;
+      --on-primary: #081214;
+      --primary-container: #163840;
+      --on-primary-container: #c7f0f7;
+      --secondary: #5d7882;
+      --tertiary: #87d69b;
+      --error: #f27474;
+      --on-error: #1a0606;
+
+      --data-1: #63c7d6;
+      --data-2: #87d69b;
+      --data-3: #e8b954;
+      --data-4: #f08c70;
+      --data-context: #415861;
+
+      /* 2. Vietnamese-safe typography layered over Aurora voice */
+      --font-headline: 'Be Vietnam Pro', 'Instrument Sans', sans-serif;
+      --font-body: 'Be Vietnam Pro', sans-serif;
+      --font-label: 'JetBrains Mono', monospace;
+
+      --rounded: 0.5rem;
+      --rounded-lg: 0.75rem;
+      --rounded-full: 9999px;
+
+      --hairline: 1px solid var(--outline-variant);
+      --hairline-strong: 1px solid var(--outline);
+      --panel-gradient: linear-gradient(180deg, #162226 0%, #111a1e 100%);
+      --heading-tracking: -0.02em;
+      --label-tracking: 0.05em;
+      --sage-tint: color-mix(in srgb, var(--tertiary) 13%, transparent);
+      --cyan-tint: color-mix(in srgb, var(--primary) 13%, transparent);
+
+      /* 3. Medal & Semantic Tokens */
+      --positive: #87d69b;
+      --warning: #e8b954;
+      --focus: #63c7d6;
+
+      --medal-gold: #e8b954;
+      --medal-gold-tint: color-mix(in srgb, #e8b954 14%, transparent);
+      --medal-gold-border: color-mix(in srgb, #e8b954 45%, transparent);
+      --medal-silver: #cbd5e1;
+      --medal-silver-tint: color-mix(in srgb, #cbd5e1 12%, transparent);
+      --medal-silver-border: color-mix(in srgb, #cbd5e1 40%, transparent);
+      --medal-bronze: #f08c70;
+      --medal-bronze-tint: color-mix(in srgb, #f08c70 14%, transparent);
+      --medal-bronze-border: color-mix(in srgb, #f08c70 42%, transparent);
+      --error-tint: color-mix(in srgb, #f27474 14%, transparent);
+
+      /* Type scale (Dashboard) */
+      --display-size: clamp(1.75rem, 1.35rem + 1.3vw, 2.35rem);
+      --headline-size: clamp(1.2rem, 1.05rem + 0.45vw, 1.45rem);
+      --subhead-size: clamp(1.02rem, 0.96rem + 0.22vw, 1.15rem);
+      --body-size: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);
+      --label-size: 0.75rem;
+
+      /* Spacing scale */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2.25rem;
+      --space-2xl: 3.5rem;
+
+      /* Motion */
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+      --dur-micro: 120ms;
+      --dur-short: 240ms;
+      --dur-long: 420ms;
+    }
+
+    /* Base reset */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      overflow-x: clip;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: var(--font-body);
+      font-size: var(--body-size);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    header { position: static !important; }
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Confetti canvas overlay */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 60;
+    }
+
+    /* Page layout */
+    .page-grid {
+      display: grid;
+      gap: var(--space-lg);
+      padding: var(--space-lg);
+      max-width: 1400px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .page-grid * { min-width: 0; }
+
+    /* Smart TV / Projector zoom mode */
+    body.tv-mode .page-grid {
+      max-width: 1560px;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+    }
+    body.tv-mode .leaderboard-table td,
+    body.tv-mode .leaderboard-table th {
+      padding-block: var(--space-md);
+      font-size: 1.0625rem;
+    }
+    body.tv-mode .podium-score {
+      font-size: 2.35rem;
+    }
+    body.tv-mode .non-tv-panel {
+      display: none;
+    }
+
+    /* Header */
+    .top-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-md);
+      padding-bottom: var(--space-md);
+      border-bottom: var(--hairline);
+    }
+    .header-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      max-width: 78ch;
+    }
+    .header-meta {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      letter-spacing: var(--label-tracking);
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+    .page-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--display-size);
+      font-weight: 700;
+      letter-spacing: var(--heading-tracking);
+      line-height: 1.12;
+      color: var(--on-surface);
+    }
+    .page-subtitle {
+      margin: 0;
+      color: var(--on-surface-variant);
+      font-size: var(--subhead-size);
+      max-width: 68ch;
+    }
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      min-height: 44px;
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--rounded);
+      border: var(--hairline-strong);
+      background-color: var(--surface-container);
+      color: var(--on-surface);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+    }
+    .btn:hover:not(:disabled) {
+      background-color: var(--surface-container-high);
+    }
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--on-primary);
+      border-color: var(--primary);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--on-primary-container);
+    }
+    .btn-gold {
+      background-color: var(--medal-gold-tint);
+      color: var(--medal-gold);
+      border-color: var(--medal-gold-border);
+    }
+    .btn-gold:hover:not(:disabled) {
+      background-color: var(--medal-gold);
+      color: var(--on-primary);
+    }
+    .btn-sage {
+      background-color: var(--sage-tint);
+      color: var(--tertiary);
+      border-color: color-mix(in srgb, var(--tertiary) 40%, transparent);
+    }
+    .btn-sage:hover:not(:disabled) {
+      background-color: color-mix(in srgb, var(--tertiary) 24%, transparent);
+    }
+    .btn-danger-armed {
+      background-color: var(--error);
+      color: var(--on-error);
+      border-color: var(--error);
+    }
+
+    /* Panels */
+    .panel {
+      background: var(--panel-gradient);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-lg);
+    }
+    .panel-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+    .panel-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: var(--headline-size);
+      font-weight: 600;
+      letter-spacing: var(--heading-tracking);
+      color: var(--on-surface);
+    }
+    .data-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      letter-spacing: var(--label-tracking);
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+    }
+
+    /* Max Score Celebration Banner */
+    .celebration-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--rounded-lg);
+      background: linear-gradient(90deg, var(--medal-gold-tint) 0%, var(--primary-container) 100%);
+      border: 1px solid var(--medal-gold-border);
+      animation: slideDown var(--dur-long) var(--ease-out);
+    }
+    .celebration-banner.visible {
+      display: flex;
+    }
+    .celebration-content {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    .celebration-badge {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--rounded-full);
+      background-color: var(--medal-gold-tint);
+      border: 1px solid var(--medal-gold-border);
+      display: grid;
+      place-items: center;
+      color: var(--medal-gold);
+      flex-shrink: 0;
+    }
+    .celebration-title {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--medal-gold);
+    }
+    .celebration-desc {
+      margin: var(--space-xs) 0 0;
+      color: var(--on-surface);
+      font-size: 0.9375rem;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
+    }
+    .kpi-card {
+      background: var(--panel-gradient);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .kpi-value {
+      font-family: var(--font-headline);
+      font-size: clamp(1.6rem, 1.3rem + 0.9vw, 2.15rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: var(--heading-tracking);
+      color: var(--on-surface);
+      line-height: 1.15;
+    }
+    .kpi-delta {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--tertiary);
+    }
+    .kpi-delta.neutral {
+      color: var(--on-surface-variant);
+    }
+
+    /* Control Bar (Firebase Simulator + Filters) */
+    .control-panel {
+      background: var(--surface-container-low);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: var(--space-md);
+    }
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: var(--space-sm);
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .field-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      letter-spacing: var(--label-tracking);
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+    }
+    .input-control, .select-control {
+      min-height: 44px;
+      padding: var(--space-sm) var(--space-md);
+      background-color: var(--background);
+      border: var(--hairline-strong);
+      border-radius: var(--rounded);
+      color: var(--on-surface);
+      font-size: 0.9375rem;
+    }
+    .select-control {
+      padding-right: var(--space-xl);
+    }
+    .input-control::placeholder {
+      color: var(--on-surface-variant);
+      opacity: 0.7;
+    }
+    .stream-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--rounded);
+      background-color: var(--background);
+      border: var(--hairline);
+    }
+    .stream-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: var(--rounded-full);
+      background-color: var(--secondary);
+    }
+    .stream-dot.active {
+      background-color: var(--tertiary);
+    }
+
+    /* Manual Entry Drawer */
+    .manual-drawer {
+      display: none;
+      padding-top: var(--space-md);
+      border-top: var(--hairline);
+    }
+    .manual-drawer.open {
+      display: block;
+    }
+    .manual-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: var(--space-md);
+      align-items: end;
+    }
+    .form-feedback {
+      margin-top: var(--space-sm);
+      font-size: 0.875rem;
+      color: var(--tertiary);
+      min-height: 1.25rem;
+    }
+    .form-feedback.error {
+      color: var(--error);
+    }
+
+    /* Top 3 Podium */
+    .podium-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr) minmax(0, 1fr);
+      gap: var(--space-md);
+      align-items: end;
+    }
+    .podium-card {
+      background: var(--panel-gradient);
+      border: var(--hairline);
+      border-radius: var(--rounded-lg);
+      padding: var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+      position: relative;
+      transition: transform var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+    }
+    .podium-card.rank-1 {
+      border-color: var(--medal-gold-border);
+      background: linear-gradient(180deg, var(--medal-gold-tint) 0%, var(--surface-container-low) 65%);
+      padding-top: var(--space-xl);
+    }
+    .podium-card.rank-2 {
+      border-color: var(--medal-silver-border);
+      background: linear-gradient(180deg, var(--medal-silver-tint) 0%, var(--surface-container-low) 70%);
+    }
+    .podium-card.rank-3 {
+      border-color: var(--medal-bronze-border);
+      background: linear-gradient(180deg, var(--medal-bronze-tint) 0%, var(--surface-container-low) 70%);
+    }
+    .podium-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: var(--space-sm);
+    }
+    .podium-rank-label {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      letter-spacing: var(--label-tracking);
+      text-transform: uppercase;
+      padding: 3px var(--space-sm);
+      border-radius: var(--rounded);
+    }
+    .rank-1 .podium-rank-label {
+      background-color: var(--medal-gold-tint);
+      color: var(--medal-gold);
+      border: 1px solid var(--medal-gold-border);
+    }
+    .rank-2 .podium-rank-label {
+      background-color: var(--medal-silver-tint);
+      color: var(--medal-silver);
+      border: 1px solid var(--medal-silver-border);
+    }
+    .rank-3 .podium-rank-label {
+      background-color: var(--medal-bronze-tint);
+      color: var(--medal-bronze);
+      border: 1px solid var(--medal-bronze-border);
+    }
+    .medal-svg {
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+    .rank-1 .medal-svg {
+      width: 54px;
+      height: 54px;
+    }
+    .podium-name {
+      margin: 0;
+      font-family: var(--font-headline);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--on-surface);
+      line-height: 1.25;
+    }
+    .podium-class {
+      font-family: var(--font-label);
+      font-size: 0.8125rem;
+      color: var(--on-surface-variant);
+    }
+    .podium-metrics {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: var(--space-md);
+      margin-top: var(--space-xs);
+      padding-top: var(--space-sm);
+      border-top: var(--hairline);
+    }
+    .podium-score {
+      font-family: var(--font-headline);
+      font-size: 2rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: var(--heading-tracking);
+      line-height: 1;
+    }
+    .rank-1 .podium-score { color: var(--medal-gold); }
+    .rank-2 .podium-score { color: var(--medal-silver); }
+    .rank-3 .podium-score { color: var(--medal-bronze); }
+    .podium-time {
+      font-family: var(--font-label);
+      font-size: 0.9375rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--on-surface);
+    }
+    .podium-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: 0.8125rem;
+      color: var(--tertiary);
+    }
+
+    /* Main Workspace Grid */
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+      gap: var(--space-lg);
+      align-items: start;
+    }
+    .side-stack {
+      display: grid;
+      gap: var(--space-lg);
+    }
+
+    /* Leaderboard Table */
+    .table-wrap {
+      overflow-x: auto;
+    }
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .leaderboard-table th {
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      letter-spacing: var(--label-tracking);
+      text-transform: uppercase;
+      color: var(--on-surface-variant);
+      padding: var(--space-sm) var(--space-sm);
+      border-bottom: var(--hairline-strong);
+      white-space: nowrap;
+    }
+    .leaderboard-table td {
+      padding: 0.8rem var(--space-sm);
+      border-bottom: var(--hairline);
+      vertical-align: middle;
+    }
+    .leaderboard-table tbody tr {
+      cursor: pointer;
+      transition: background-color var(--dur-micro) var(--ease-out);
+    }
+    .leaderboard-table tbody tr:hover {
+      background-color: var(--surface-container-high);
+    }
+    .leaderboard-table tbody tr.selected-row {
+      background-color: var(--primary-container);
+    }
+    .leaderboard-table tbody tr.new-entry {
+      animation: rowHighlight 1.6s var(--ease-out);
+    }
+    .num-col {
+      text-align: right;
+      font-family: var(--font-label);
+      font-variant-numeric: tabular-nums;
+    }
+    .rank-cell {
+      font-family: var(--font-label);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .medal-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px var(--space-sm);
+      border-radius: var(--rounded);
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+    .medal-pill.gold {
+      background-color: var(--medal-gold-tint);
+      color: var(--medal-gold);
+      border: 1px solid var(--medal-gold-border);
+    }
+    .medal-pill.silver {
+      background-color: var(--medal-silver-tint);
+      color: var(--medal-silver);
+      border: 1px solid var(--medal-silver-border);
+    }
+    .medal-pill.bronze {
+      background-color: var(--medal-bronze-tint);
+      color: var(--medal-bronze);
+      border: 1px solid var(--medal-bronze-border);
+    }
+    .rank-plain {
+      display: inline-block;
+      min-width: 2.2rem;
+      color: var(--on-surface-variant);
+      padding-left: var(--space-xs);
+    }
+    .student-cell-name {
+      font-weight: 600;
+      color: var(--on-surface);
+    }
+    .student-cell-sub {
+      font-size: 0.8125rem;
+      color: var(--on-surface-variant);
+    }
+    .score-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-family: var(--font-label);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      padding: 2px var(--space-sm);
+      border-radius: var(--rounded);
+      background-color: var(--cyan-tint);
+      color: var(--primary);
+    }
+    .score-pill.perfect {
+      background-color: var(--medal-gold-tint);
+      color: var(--medal-gold);
+      border: 1px solid var(--medal-gold-border);
+    }
+    .pillar-chip {
+      display: inline-block;
+      padding: 2px var(--space-sm);
+      border-radius: var(--rounded);
+      font-size: 0.78rem;
+      background-color: var(--sage-tint);
+      color: var(--tertiary);
+      border: 1px solid color-mix(in srgb, var(--tertiary) 30%, transparent);
+      white-space: nowrap;
+    }
+
+    /* Student Detail Inspector */
+    .detail-card {
+      margin-top: var(--space-md);
+      padding: var(--space-md);
+      background-color: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      display: grid;
+      gap: var(--space-md);
+    }
+    .detail-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .detail-bars {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: var(--space-sm);
+    }
+    .mini-pillar {
+      background-color: var(--surface-container);
+      border-radius: var(--rounded);
+      padding: var(--space-sm);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .mini-bar-track {
+      height: 6px;
+      border-radius: var(--rounded-full);
+      background-color: var(--surface-container-high);
+      overflow: hidden;
+    }
+    .mini-bar-fill {
+      height: 100%;
+      background-color: var(--primary);
+      border-radius: var(--rounded-full);
+    }
+    .commitment-quote {
+      margin: 0;
+      padding-left: var(--space-md);
+      border-left: 2px solid var(--tertiary);
+      color: var(--on-surface-variant);
+      font-style: italic;
+    }
+
+    /* Chart Container */
+    .chart-box {
+      position: relative;
+      width: 100%;
+      min-height: 250px;
+      height: 260px;
+    }
+
+    /* Firebase Realtime Event Feed */
+    .feed-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .feed-item {
+      background-color: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .feed-item.perfect-event {
+      border-color: var(--medal-gold-border);
+      background-color: color-mix(in srgb, var(--medal-gold) 7%, var(--background));
+    }
+    .feed-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      font-family: var(--font-label);
+      font-size: var(--label-size);
+      color: var(--on-surface-variant);
+    }
+    .feed-msg {
+      font-size: 0.875rem;
+      color: var(--on-surface);
+    }
+    .json-well {
+      margin-top: var(--space-sm);
+      background-color: var(--background);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      padding: var(--space-sm) var(--space-md);
+      font-family: var(--font-label);
+      font-size: 0.75rem;
+      color: var(--primary);
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.45;
+    }
+
+    /* Empty state */
+    .empty-state {
+      padding: var(--space-xl);
+      text-align: center;
+      color: var(--on-surface-variant);
+      border: var(--hairline);
+      border-radius: var(--rounded);
+      background-color: var(--background);
+    }
+
+    /* Footer */
+    .source-footer {
+      border-top: var(--hairline);
+      padding-top: var(--space-md);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-sm);
+      font-size: 0.8125rem;
+      color: var(--on-surface-variant);
+    }
+
+    /* Animations */
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes rowHighlight {
+      0% { background-color: var(--cyan-tint); }
+      100% { background-color: transparent; }
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1080px) {
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .workspace-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 780px) {
+      .podium-grid {
+        grid-template-columns: 1fr;
+      }
+      .podium-card.rank-1 { order: 1; }
+      .podium-card.rank-2 { order: 2; }
+      .podium-card.rank-3 { order: 3; }
+      .detail-bars {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 640px) {
+      .page-grid {
+        padding: var(--space-sm);
+        gap: var(--space-md);
+      }
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      .control-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .header-actions {
+        width: 100%;
+      }
+      .btn {
+        flex: 1 1 auto;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <main class="page-grid">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-title-wrap">
+        <span class="header-meta">Chuyên đề Tin học 7 · Trường THCS Tân Bình · GV: Trần Thị Thanh Trúc</span>
+        <h1 class="page-title">Bảng Vàng Vinh Danh — Bài 5: Ứng Xử Trên Mạng</h1>
+        <p class="page-subtitle">Theo dõi kết quả thực hành 5T &amp; Cam kết tử tế theo thời gian thực (“Sau màn hình, là một trái tim”).</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn" id="btn-sound" onclick="toggleSound()" aria-pressed="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+          <span id="sound-label">Âm thanh: Tắt</span>
+        </button>
+        <button type="button" class="btn" id="btn-tv-mode" onclick="toggleTvMode()" aria-pressed="false">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="7" width="20" height="13" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+          <span id="tv-mode-label">Chế độ Smart TV</span>
+        </button>
+        <button type="button" class="btn" id="btn-export" onclick="exportCsv()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Xuất CSV</span>
+        </button>
+        <button type="button" class="btn" id="btn-reset" onclick="handleResetClick(this)">
+          <span>Khôi phục mẫu</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Max Score Celebration Banner -->
+    <section id="celebration-banner" class="celebration-banner" role="status" aria-live="polite">
+      <div class="celebration-content">
+        <div class="celebration-badge" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <div>
+          <h2 class="celebration-title" id="celebration-title">Chúc mừng Tay Thiện Xạ Điểm 10!</h2>
+          <p class="celebration-desc" id="celebration-desc">Học sinh vừa đạt điểm tối đa 100/100 trong thử thách Bài 5.</p>
+        </div>
+      </div>
+      <button type="button" class="btn" onclick="dismissCelebration()">Đóng</button>
+    </section>
+
+    <!-- Top-Line KPI Strip -->
+    <section class="kpi-grid" aria-label="Thống kê lớp học thời gian thực">
+      <article class="kpi-card">
+        <span class="data-label">Tổng bài đã nộp</span>
+        <div class="kpi-value" id="kpi-total">0</div>
+        <div class="kpi-delta" id="kpi-total-delta">Chờ đồng bộ Firebase</div>
+      </article>
+      <article class="kpi-card">
+        <span class="data-label">Điểm trung bình</span>
+        <div class="kpi-value" id="kpi-avg">0 / 100</div>
+        <div class="kpi-delta" id="kpi-avg-10">Quy đổi: 0.0 / 10</div>
+      </article>
+      <article class="kpi-card">
+        <span class="data-label">Đạt điểm tối đa (100/100)</span>
+        <div class="kpi-value" id="kpi-perfect">0</div>
+        <div class="kpi-delta" id="kpi-perfect-rate">0% tổng bài nộp</div>
+      </article>
+      <article class="kpi-card">
+        <span class="data-label">Thời gian hoàn thành TB</span>
+        <div class="kpi-value" id="kpi-time">00:00</div>
+        <div class="kpi-delta neutral" id="kpi-commitment">100% đã ký Cam kết tử tế</div>
+      </article>
+    </section>
+
+    <!-- Firebase Realtime Control & Filter Bar -->
+    <section class="control-panel" aria-label="Điều khiển mô phỏng Firebase và bộ lọc">
+      <div class="control-row">
+        <div class="control-group">
+          <div class="field-group">
+            <span class="field-label">Đồng bộ Firebase (Mô phỏng)</span>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center;">
+              <button type="button" class="btn btn-primary" id="btn-stream-toggle" onclick="toggleFirebaseStream()">
+                <span id="stream-btn-text">Bắt đầu nhận bài thời gian thực</span>
+              </button>
+              <div class="stream-indicator" id="stream-status-box">
+                <span class="stream-dot" id="stream-dot"></span>
+                <span id="stream-status-text">Đang tạm dừng · child_added</span>
+              </div>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="select-speed">Tốc độ gửi về</label>
+            <select class="select-control" id="select-speed" onchange="changeStreamSpeed(this.value)">
+              <option value="5500">Chậm (5.5 giây/bài)</option>
+              <option value="3200" selected>Chuẩn lớp học (3.2 giây)</option>
+              <option value="1600">Nhanh (1.6 giây)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <button type="button" class="btn btn-sage" onclick="simulateSingleSubmission(false)">
+            <span>+ Nhận 1 bài ngẫu nhiên</span>
+          </button>
+          <button type="button" class="btn btn-gold" onclick="simulateSingleSubmission(true)">
+            <span>★ Mô phỏng HS đạt 100/100</span>
+          </button>
+          <button type="button" class="btn" id="btn-toggle-manual" onclick="toggleManualDrawer()">
+            <span>Nhập tay kết quả</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="control-row">
+        <div class="control-group" style="flex: 1 1 320px;">
+          <div class="field-group" style="flex: 1 1 220px;">
+            <label class="field-label" for="search-student">Tìm học sinh trên Bảng Vàng</label>
+            <input class="input-control" id="search-student" type="search" placeholder="Nhập họ tên học sinh..." oninput="handleFilterChange()">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="filter-class">Lọc theo lớp</label>
+            <select class="select-control" id="filter-class" onchange="handleFilterChange()">
+              <option value="ALL">Tất cả khối 7</option>
+              <option value="7A1">Lớp 7A1</option>
+              <option value="7A2">Lớp 7A2</option>
+              <option value="7A3">Lớp 7A3</option>
+              <option value="7A4">Lớp 7A4</option>
+              <option value="7A5">Lớp 7A5</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="filter-sort">Sắp xếp</label>
+            <select class="select-control" id="filter-sort" onchange="handleFilterChange()">
+              <option value="rank">Điểm cao nhất → Thời gian nhanh nhất</option>
+              <option value="recent">Mới gửi về gần nhất</option>
+              <option value="time">Hoàn thành nhanh nhất</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Entry Drawer -->
+      <div class="manual-drawer" id="manual-drawer">
+        <form id="manual-form" class="manual-form-grid" onsubmit="submitManualStudent(event)">
+          <div class="field-group">
+            <label class="field-label" for="manual-name">Họ và tên học sinh</label>
+            <input class="input-control" id="manual-name" type="text" placeholder="Ví dụ: Nguyễn Minh Khôi" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="manual-class">Lớp</label>
+            <select class="select-control" id="manual-class">
+              <option value="7A1">7A1</option>
+              <option value="7A2">7A2</option>
+              <option value="7A3">7A3</option>
+              <option value="7A4">7A4</option>
+              <option value="7A5">7A5</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="manual-score">Điểm số (0–100)</label>
+            <input class="input-control" id="manual-score" type="number" min="0" max="100" step="5" value="100" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="manual-time">Thời gian (giây)</label>
+            <input class="input-control" id="manual-time" type="number" min="35" max="900" value="112" required>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="manual-pillar">Trạm 5T nổi bật</label>
+            <select class="select-control" id="manual-pillar">
+              <option value="Tôn trọng">Tôn trọng</option>
+              <option value="Tử tế">Tử tế</option>
+              <option value="Thận trọng">Thận trọng</option>
+              <option value="Tra cứu">Tra cứu</option>
+              <option value="Trách nhiệm">Trách nhiệm</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Gửi lên Bảng Vàng</button>
+        </form>
+        <div class="form-feedback" id="manual-feedback" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Top 3 Podium -->
+    <section aria-label="Vinh danh Top 3 huy chương Vàng, Bạc, Đồng">
+      <div class="podium-grid" id="podium-grid"></div>
+    </section>
+
+    <!-- Main Two-Column Workspace -->
+    <section class="workspace-grid">
+      <!-- Top 10 Leaderboard Table -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <span class="data-label">Xếp hạng thời gian thực · Thang 100 điểm</span>
+            <h2 class="panel-title">Top 10 Học Sinh Xuất Sắc Nhất</h2>
+          </div>
+          <span class="data-label" id="table-scope-label">Hiển thị 10 / 10 học sinh</span>
+        </div>
+
+        <div class="table-wrap" id="leaderboard-wrap">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>Hạng</th>
+                <th>Học sinh</th>
+                <th>Lớp</th>
+                <th class="num-col">Điểm</th>
+                <th class="num-col">Thời gian</th>
+                <th>Năng lực 5T</th>
+                <th>Danh hiệu</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+          </table>
+        </div>
+
+        <!-- Inline Detail Inspector for Selected Student -->
+        <div class="detail-card" id="student-detail-card" aria-live="polite"></div>
+      </div>
+
+      <!-- Right Side Analytics & Firebase Telemetry -->
+      <aside class="side-stack">
+        <div class="panel non-tv-panel">
+          <div class="panel-header">
+            <div>
+              <span class="data-label">Phân tích theo 5 phòng thử thách</span>
+              <h2 class="panel-title">Mức Độ Làm Chủ 5T</h2>
+            </div>
+          </div>
+          <div class="chart-box">
+            <canvas id="pillars-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="data-label">Firebase RTDB Listener</span>
+              <h2 class="panel-title">Luồng Dữ Liệu Gửi Về</h2>
+            </div>
+            <span class="data-label" id="latency-readout">24 ms</span>
+          </div>
+          <ul class="feed-list" id="firebase-feed"></ul>
+          <pre class="json-well" id="firebase-json-preview"></pre>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Footer -->
+    <footer class="source-footer">
+      <span>Nguồn học liệu: Kế hoạch chuyên đề Tin học 7 cấp trường &amp; Bài 5: Ứng xử trên mạng (SGK Kết nối tri thức với cuộc sống) · Tổ Công nghệ - Tin học, Trường THCS Tân Bình.</span>
+      <span>Hệ sinh thái Web App/Game “Gia Sư Tin Học” · Chuẩn 5T: Tôn trọng — Tử tế — Thận trọng — Tra cứu — Trách nhiệm.</span>
+    </footer>
+  </main>
+
+  <api-shim></api-shim>
+
+  <script>
+    /* =========================================================================
+       DỮ LIỆU MẪU BAN ĐẦU — BÀI 5: ỨNG XỬ TRÊN MẠNG (TIN HỌC 7 - THCS TÂN BÌNH)
+       Giáo viên có thể chỉnh sửa danh sách học sinh, câu cam kết và bộ mô phỏng.
+       ========================================================================= */
+    const INITIAL_SUBMISSIONS = [
+      {
+        id: `fb-101`,
+        name: `Nguyễn Ngọc Minh Anh`,
+        className: `7A1`,
+        score: 100,
+        timeSec: 114,
+        topPillar: `Tử tế`,
+        pillars: { 'Tôn trọng': 100, 'Tử tế': 100, 'Thận trọng': 100, 'Tra cứu': 100, 'Trách nhiệm': 100 },
+        commitment: `Dừng lại 3 giây trước khi nhấn Share, luôn dùng lời nói ấm áp với bạn bè trong nhóm chat.`,
+        submittedAt: `15:52:18`,
+        seq: 1
+      },
+      {
+        id: `fb-102`,
+        name: `Trần Gia Bảo`,
+        className: `7A2`,
+        score: 100,
+        timeSec: 129,
+        topPillar: `Thận trọng`,
+        pillars: { 'Tôn trọng': 100, 'Tử tế': 100, 'Thận trọng': 100, 'Tra cứu': 100, 'Trách nhiệm': 100 },
+        commitment: `Quà lạ đừng ham, link lạ đừng nhấn; bảo vệ tuyệt đối mật khẩu và mã OTP cá nhân.`,
+        submittedAt: `15:52:45`,
+        seq: 2
+      },
+      {
+        id: `fb-103`,
+        name: `Lê Hoàng Nam`,
+        className: `7A1`,
+        score: 95,
+        timeSec: 121,
+        topPillar: `Tra cứu`,
+        pillars: { 'Tôn trọng': 100, 'Tử tế': 95, 'Thận trọng': 90, 'Tra cứu': 100, 'Trách nhiệm': 90 },
+        commitment: `Kiểm chứng thông tin trên website chính thức của trường trước khi chia sẻ cho lớp.`,
+        submittedAt: `15:53:04`,
+        seq: 3
+      },
+      {
+        id: `fb-104`,
+        name: `Phạm Thảo Nhi`,
+        className: `7A3`,
+        score: 95,
+        timeSec: 142,
+        topPillar: `Tôn trọng`,
+        pillars: { 'Tôn trọng': 100, 'Tử tế': 95, 'Thận trọng': 95, 'Tra cứu': 90, 'Trách nhiệm': 95 },
+        commitment: `Khác ý kiến vẫn tôn trọng, góp ý vào vấn đề chứ không công kích cá nhân.`,
+        submittedAt: `15:53:29`,
+        seq: 4
+      },
+      {
+        id: `fb-105`,
+        name: `Võ Quốc Huy`,
+        className: `7A2`,
+        score: 90,
+        timeSec: 136,
+        topPillar: `Trách nhiệm`,
+        pillars: { 'Tôn trọng': 90, 'Tử tế': 90, 'Thận trọng': 85, 'Tra cứu': 90, 'Trách nhiệm': 95 },
+        commitment: `Cân bằng thời gian Internet dưới 2 giờ mỗi ngày, ưu tiên thể thao và trò chuyện cùng gia đình.`,
+        submittedAt: `15:53:50`,
+        seq: 5
+      },
+      {
+        id: `fb-106`,
+        name: `Đặng Khánh Linh`,
+        className: `7A4`,
+        score: 90,
+        timeSec: 158,
+        topPillar: `Tử tế`,
+        pillars: { 'Tôn trọng': 90, 'Tử tế': 100, 'Thận trọng': 85, 'Tra cứu': 85, 'Trách nhiệm': 90 },
+        commitment: `Khi thấy bạn bị trêu chọc trên mạng, chủ động hỏi thăm và báo cho cô chủ nhiệm hỗ trợ.`,
+        submittedAt: `15:54:11`,
+        seq: 6
+      },
+      {
+        id: `fb-107`,
+        name: `Bùi Tấn Phát`,
+        className: `7A3`,
+        score: 85,
+        timeSec: 148,
+        topPillar: `Thận trọng`,
+        pillars: { 'Tôn trọng': 85, 'Tử tế': 85, 'Thận trọng': 95, 'Tra cứu': 80, 'Trách nhiệm': 80 },
+        commitment: `Không tự ý chụp ảnh dìm hàng bạn bè đăng lên mạng khi chưa được cho phép.`,
+        submittedAt: `15:54:33`,
+        seq: 7
+      },
+      {
+        id: `fb-108`,
+        name: `Huỳnh Ngọc Hân`,
+        className: `7A5`,
+        score: 85,
+        timeSec: 164,
+        topPillar: `Tôn trọng`,
+        pillars: { 'Tôn trọng': 95, 'Tử tế': 85, 'Thận trọng': 80, 'Tra cứu': 85, 'Trách nhiệm': 80 },
+        commitment: `Mỗi click chuột là một dấu chân số tử tế để lại trong tập thể lớp 7.`,
+        submittedAt: `15:54:57`,
+        seq: 8
+      },
+      {
+        id: `fb-109`,
+        name: `Ngô Đức Thịnh`,
+        className: `7A4`,
+        score: 80,
+        timeSec: 171,
+        topPillar: `Tra cứu`,
+        pillars: { 'Tôn trọng': 80, 'Tử tế': 80, 'Thận trọng': 75, 'Tra cứu': 90, 'Trách nhiệm': 75 },
+        commitment: `Không tin ngay các bài đăng giật tít thiếu nguồn rõ ràng trên mạng xã hội.`,
+        submittedAt: `15:55:19`,
+        seq: 9
+      },
+      {
+        id: `fb-110`,
+        name: `Trịnh Phương Uyên`,
+        className: `7A5`,
+        score: 80,
+        timeSec: 185,
+        topPillar: `Trách nhiệm`,
+        pillars: { 'Tôn trọng': 80, 'Tử tế': 85, 'Thận trọng': 75, 'Tra cứu': 75, 'Trách nhiệm': 85 },
+        commitment: `Nếu lỡ đăng sai thông tin, dũng cảm gỡ bài, đính chính và nhắc bạn bè ngừng chia sẻ.`,
+        submittedAt: `15:55:42`,
+        seq: 10
+      }
+    ];
+
+    const SIMULATED_POOL = [
+      {
+        name: `Nguyễn Hoàng Thiên Ân`,
+        className: `7A1`,
+        topPillar: `Tử tế`,
+        commitment: `Thế giới ảo nhưng cảm xúc thật — luôn lắng nghe và bảo vệ bạn bè trước bạo lực mạng.`
+      },
+      {
+        name: `Lý Minh Quân`,
+        className: `7A2`,
+        topPillar: `Thận trọng`,
+        commitment: `Không chia sẻ địa chỉ nhà, số điện thoại hay mật khẩu tài khoản cho người lạ.`
+      },
+      {
+        name: `Trương Bảo Ngọc`,
+        className: `7A3`,
+        topPillar: `Tra cứu`,
+        commitment: `Kiểm chứng trước, chia sẻ sau — hỏi thầy cô hoặc website trường khi gặp tin đồn.`
+      },
+      {
+        name: `Phan Anh Khoa`,
+        className: `7A1`,
+        topPillar: `Trách nhiệm`,
+        commitment: `Không thức khuya chơi game trực tuyến, lập thời gian biểu sử dụng Internet hợp lý.`
+      },
+      {
+        name: `Đoàn Ngọc Diệp`,
+        className: `7A4`,
+        topPillar: `Tôn trọng`,
+        commitment: `Sử dụng ngôn ngữ lịch sự, biểu tượng cảm xúc thân thiện khi thảo luận nhóm.`
+      },
+      {
+        name: `Lâm Gia Hưng`,
+        className: `7A5`,
+        topPillar: `Thận trọng`,
+        commitment: `Đóng ngay trang web có nội dung xấu và nhờ ba mẹ, thầy cô tư vấn kịp thời.`
+      },
+      {
+        name: `Vũ Khánh Vy`,
+        className: `7A2`,
+        topPillar: `Tử tế`,
+        commitment: `Chạm màn hình — lan tỏa yêu thương, không hùa theo bình luận chế giễu người khác.`
+      },
+      {
+        name: `Tô Nhật Minh`,
+        className: `7A3`,
+        topPillar: `Trách nhiệm`,
+        commitment: `Nghĩ trước khi đăng, có sai có sửa — giữ gìn hình ảnh văn minh học sinh THCS Tân Bình.`
+      }
+    ];
+
+    /* =========================================================================
+       TRẠNG THÁI ỨNG DỤNG
+       ========================================================================= */
+    let appState = {
+      submissions: JSON.parse(JSON.stringify(INITIAL_SUBMISSIONS)),
+      selectedId: `fb-101`,
+      filterClass: `ALL`,
+      sortMode: `rank`,
+      searchQuery: ``,
+      soundEnabled: false,
+      tvMode: false,
+      streamSpeedMs: 3200,
+      nextSeq: 11,
+      feedEvents: []
+    };
+
+    let streamTimerId = null;
+    let streamRunning = false;
+    let latestAddedId = null;
+    let celebrationTimerId = null;
+    let audioCtx = null;
+    let pillarsChart = null;
+    let confettiParticles = [];
+    let confettiAnimId = null;
+
+    /* =========================================================================
+       HÀM ĐỌC TOKEN MÀU TỪ :ROOT (KHÔNG HARDCODE HEX TRONG JS)
+       ========================================================================= */
+    function getThemeToken(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    /* =========================================================================
+       TIỆN ÍCH ĐỊNH DẠNG & TÍNH TOÁN
+       ========================================================================= */
+    function formatSeconds(sec) {
+      const safe = Math.max(0, Math.round(Number(sec) || 0));
+      const m = String(Math.floor(safe / 60)).padStart(2, `0`);
+      const s = String(safe % 60).padStart(2, `0`);
+      return `${m}:${s}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, `&amp;`)
+        .replace(/</g, `&lt;`)
+        .replace(/>/g, `&gt;`)
+        .replace(/"/g, `&quot;`);
+    }
+
+    function getStudentBadge(student) {
+      if (student.score === 100 && student.timeSec <= 150) {
+        return `🎯 Tay Thiện Xạ Điểm 10`;
+      }
+      if (student.score === 100) {
+        return `👑 Đại Sứ 5T Hoàn Hảo`;
+      }
+      if (student.score >= 85 && student.timeSec < 150) {
+        return `⚡ Vua Tốc Độ`;
+      }
+      if (student.score >= 90) {
+        return `🌟 Công Dân Số Tiêu Biểu`;
+      }
+      return `🌱 Học Sinh Tích Cực`;
+    }
+
+    function getRankedSubmissions(list) {
+      const copy = list.slice();
+      copy.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        if (a.timeSec !== b.timeSec) return a.timeSec - b.timeSec;
+        return a.seq - b.seq;
+      });
+      return copy;
+    }
+
+    function getFilteredSubmissions() {
+      const q = appState.searchQuery.trim().toLowerCase();
+      let list = appState.submissions.filter((item) => {
+        const matchClass = appState.filterClass === `ALL` || item.className === appState.filterClass;
+        const matchSearch = !q || item.name.toLowerCase().includes(q) || item.className.toLowerCase().includes(q);
+        return matchClass && matchSearch;
+      });
+
+      if (appState.sortMode === `recent`) {
+        list.sort((a, b) => b.seq - a.seq);
+      } else if (appState.sortMode === `time`) {
+        list.sort((a, b) => a.timeSec - b.timeSec || b.score - a.score);
+      } else {
+        list = getRankedSubmissions(list);
+      }
+      return list;
+    }
+
+    /* =========================================================================
+       ÂM THANH WEB AUDIO API (KHÔNG TỰ PHÁT KHI MỞ TRANG, CHỈ PHÁT SAU TƯƠNG TÁC)
+       ========================================================================= */
+    function ensureAudioContext() {
+      if (!audioCtx) {
+        const AudioCtor = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtor) audioCtx = new AudioCtor();
+      }
+      if (audioCtx && audioCtx.state === `suspended`) {
+        audioCtx.resume();
+      }
+    }
+
+    function playPingSound() {
+      if (!appState.soundEnabled) return;
+      ensureAudioContext();
+      if (!audioCtx) return;
+
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = `sine`;
+      osc.frequency.setValueAtTime(660, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.26);
+    }
+
+    function playFanfareSound() {
+      if (!appState.soundEnabled) return;
+      ensureAudioContext();
+      if (!audioCtx) return;
+
+      const notes = [523.25, 659.25, 783.99, 1046.5];
+      const baseTime = audioCtx.currentTime;
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const start = baseTime + idx * 0.09;
+        const duration = idx === notes.length - 1 ? 0.45 : 0.16;
+        osc.type = `triangle`;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.001, start);
+        gain.gain.linearRampToValueAtTime(0.14, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(start);
+        osc.stop(start + duration + 0.02);
+      });
+    }
+
+    function toggleSound() {
+      appState.soundEnabled = !appState.soundEnabled;
+      if (appState.soundEnabled) {
+        ensureAudioContext();
+        playPingSound();
+      }
+      updateHeaderControls();
+      persistState();
+    }
+
+    /* =========================================================================
+       HIỆU ỨNG PHÁO GIẤY CANVAS & BANNER VINH DANH ĐIỂM TỐI ĐA
+       ========================================================================= */
+    function launchConfetti() {
+      const canvas = document.getElementById(`confetti-canvas`);
+      if (!canvas) return;
+      const ctx = canvas.getContext(`2d`);
+      if (!ctx) return;
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const palette = [
+        getThemeToken(`--medal-gold`),
+        getThemeToken(`--primary`),
+        getThemeToken(`--tertiary`),
+        getThemeToken(`--data-4`)
+      ].filter(Boolean);
+
+      confettiParticles = [];
+      for (let i = 0; i < 85; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: -15 - Math.random() * 140,
+          w: 6 + Math.random() * 6,
+          h: 4 + Math.random() * 5,
+          vx: (Math.random() - 0.5) * 3.5,
+          vy: 2.8 + Math.random() * 3.8,
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 0.2,
+          color: palette[i % palette.length],
+          alpha: 1
+        });
+      }
+
+      if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+      function tick() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let activeCount = 0;
+        for (let i = 0; i < confettiParticles.length; i++) {
+          const p = confettiParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vRot;
+          if (p.y > canvas.height * 0.78) {
+            p.alpha = Math.max(0, p.alpha - 0.03);
+          }
+          if (p.alpha > 0.02 && p.y < canvas.height + 20) {
+            activeCount++;
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+          }
+        }
+        if (activeCount > 0) {
+          confettiAnimId = requestAnimationFrame(tick);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          confettiAnimId = null;
+        }
+      }
+      confettiAnimId = requestAnimationFrame(tick);
+    }
+
+    function triggerMaxScoreCelebration(student) {
+      const banner = document.getElementById(`celebration-banner`);
+      const title = document.getElementById(`celebration-title`);
+      const desc = document.getElementById(`celebration-desc`);
+      if (banner && title && desc) {
+        title.textContent = `Chúc mừng ${student.name} (${student.className}) đạt Điểm Tối Đa 100/100!`;
+        desc.textContent = `Hoàn thành trong ${formatSeconds(student.timeSec)} · Danh hiệu: ${getStudentBadge(student)} · Trạm mạnh nhất: ${student.topPillar}.`;
+        banner.classList.add(`visible`);
+      }
+      launchConfetti();
+      playFanfareSound();
+      if (celebrationTimerId) clearTimeout(celebrationTimerId);
+      celebrationTimerId = setTimeout(dismissCelebration, 6500);
+    }
+
+    function dismissCelebration() {
+      const banner = document.getElementById(`celebration-banner`);
+      if (banner) banner.classList.remove(`visible`);
+    }
+
+    /* =========================================================================
+       SVG HUY CHƯƠNG VÀNG / BẠC / ĐỒNG
+       ========================================================================= */
+    function renderMedalSvg(rank) {
+      const colorVar = rank === 1 ? `var(--medal-gold)` : rank === 2 ? `var(--medal-silver)` : `var(--medal-bronze)`;
+      const numText = rank === 1 ? `1` : rank === 2 ? `2` : `3`;
+      return `<svg class="medal-svg" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <path d="M16 4h6l4 10h-6L16 4z" fill="${colorVar}" opacity="0.55"/>
+        <path d="M32 4h-6l-4 10h6L32 4z" fill="${colorVar}" opacity="0.85"/>
+        <circle cx="24" cy="29" r="14" stroke="${colorVar}" stroke-width="2.5" fill="${colorVar}" fill-opacity="0.16"/>
+        <circle cx="24" cy="29" r="10" stroke="${colorVar}" stroke-width="1.2" stroke-dasharray="2 2"/>
+        <text x="24" y="34" text-anchor="middle" fill="${colorVar}" font-family="JetBrains Mono, monospace" font-weight="700" font-size="13">${numText}</text>
+      </svg>`;
+    }
+
+    /* =========================================================================
+       CẬP NHẬT GIAO DIỆN CHÍNH
+       ========================================================================= */
+    function updateHeaderControls() {
+      const soundBtn = document.getElementById(`btn-sound`);
+      const soundLabel = document.getElementById(`sound-label`);
+      if (soundBtn && soundLabel) {
+        soundBtn.setAttribute(`aria-pressed`, String(appState.soundEnabled));
+        soundLabel.textContent = appState.soundEnabled ? `Âm thanh: Bật` : `Âm thanh: Tắt`;
+        soundBtn.classList.toggle(`btn-sage`, appState.soundEnabled);
+      }
+
+      const tvBtn = document.getElementById(`btn-tv-mode`);
+      const tvLabel = document.getElementById(`tv-mode-label`);
+      if (tvBtn && tvLabel) {
+        tvBtn.setAttribute(`aria-pressed`, String(appState.tvMode));
+        tvLabel.textContent = appState.tvMode ? `Thoát Smart TV` : `Chế độ Smart TV`;
+        tvBtn.classList.toggle(`btn-primary`, appState.tvMode);
+      }
+      document.body.classList.toggle(`tv-mode`, appState.tvMode);
+
+      const speedSel = document.getElementById(`select-speed`);
+      if (speedSel) speedSel.value = String(appState.streamSpeedMs);
+    }
+
+    function renderKpis() {
+      const all = appState.submissions;
+      const total = all.length;
+      const avgScore = total ? (all.reduce((sum, s) => sum + s.score, 0) / total) : 0;
+      const perfectCount = all.filter((s) => s.score === 100).length;
+      const perfectPct = total ? Math.round((perfectCount / total) * 100) : 0;
+      const avgTime = total ? (all.reduce((sum, s) => sum + s.timeSec, 0) / total) : 0;
+
+      const elTotal = document.getElementById(`kpi-total`);
+      const elTotalDelta = document.getElementById(`kpi-total-delta`);
+      const elAvg = document.getElementById(`kpi-avg`);
+      const elAvg10 = document.getElementById(`kpi-avg-10`);
+      const elPerfect = document.getElementById(`kpi-perfect`);
+      const elPerfectRate = document.getElementById(`kpi-perfect-rate`);
+      const elTime = document.getElementById(`kpi-time`);
+
+      if (elTotal) elTotal.textContent = String(total);
+      if (elTotalDelta) {
+        const latest = all.slice().sort((a, b) => b.seq - a.seq)[0];
+        elTotalDelta.textContent = latest
+          ? `Mới nhất: ${latest.name} (${latest.className})`
+          : `Chưa có bài nộp`;
+      }
+      if (elAvg) elAvg.textContent = `${avgScore.toFixed(1)} / 100`;
+      if (elAvg10) elAvg10.textContent = `Quy đổi thang 10: ${(avgScore / 10).toFixed(1)} điểm`;
+      if (elPerfect) elPerfect.textContent = String(perfectCount);
+      if (elPerfectRate) elPerfectRate.textContent = `${perfectPct}% tổng số học sinh`;
+      if (elTime) elTime.textContent = formatSeconds(avgTime);
+    }
+
+    function renderPodium() {
+      const podium = document.getElementById(`podium-grid`);
+      if (!podium) return;
+
+      const ranked = getRankedSubmissions(appState.submissions);
+      if (ranked.length === 0) {
+        podium.innerHTML = `<div class="empty-state">Chưa có dữ liệu xếp hạng. Hãy bật luồng mô phỏng hoặc nhập kết quả học sinh.</div>`;
+        return;
+      }
+
+      const slots = [
+        { rank: 2, item: ranked[1] || null, title: `Huy chương Bạc` },
+        { rank: 1, item: ranked[0] || null, title: `Huy chương Vàng` },
+        { rank: 3, item: ranked[2] || null, title: `Huy chương Đồng` }
+      ];
+
+      podium.innerHTML = slots.map((slot) => {
+        if (!slot.item) {
+          return `<article class="podium-card rank-${slot.rank}">
+            <div class="podium-top">
+              <span class="podium-rank-label">Hạng #${slot.rank} · ${slot.title}</span>
+              ${renderMedalSvg(slot.rank)}
+            </div>
+            <h3 class="podium-name">Đang chờ thí sinh</h3>
+            <div class="podium-class">Chưa có dữ liệu</div>
+          </article>`;
+        }
+        const s = slot.item;
+        return `<article class="podium-card rank-${slot.rank}" onclick="selectStudent('${escapeHtml(s.id)}')" style="cursor: pointer;">
+          <div class="podium-top">
+            <span class="podium-rank-label">Hạng #${slot.rank} · ${slot.title}</span>
+            ${renderMedalSvg(slot.rank)}
+          </div>
+          <div>
+            <h3 class="podium-name">${escapeHtml(s.name)}</h3>
+            <div class="podium-class">Lớp ${escapeHtml(s.className)} · Nộp lúc ${escapeHtml(s.submittedAt)}</div>
+          </div>
+          <div class="podium-metrics">
+            <span class="podium-score">${s.score}<span style="font-size: 0.9rem; font-weight: 500;">/100</span></span>
+            <span class="podium-time">⏱ ${formatSeconds(s.timeSec)}</span>
+          </div>
+          <div class="podium-tag">${escapeHtml(getStudentBadge(s))} · 5T: ${escapeHtml(s.topPillar)}</div>
+        </article>`;
+      }).join(``);
+    }
+
+    function renderLeaderboardTable() {
+      const tbody = document.getElementById(`leaderboard-body`);
+      const scopeLabel = document.getElementById(`table-scope-label`);
+      if (!tbody) return;
+
+      const globalRanked = getRankedSubmissions(appState.submissions);
+      const globalRankMap = {};
+      globalRanked.forEach((item, idx) => {
+        globalRankMap[item.id] = idx + 1;
+      });
+
+      const filtered = getFilteredSubmissions();
+      const top10 = filtered.slice(0, 10);
+
+      if (scopeLabel) {
+        scopeLabel.textContent = `Top ${top10.length} / ${filtered.length} bài phù hợp`;
+      }
+
+      if (top10.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">Không tìm thấy học sinh phù hợp bộ lọc hiện tại. Hãy thử chọn “Tất cả khối 7” hoặc xóa từ khóa tìm kiếm.</div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = top10.map((s) => {
+        const rank = globalRankMap[s.id] || 0;
+        let rankHtml = `<span class="rank-plain">#${String(rank).padStart(2, `0`)}</span>`;
+        if (rank === 1) {
+          rankHtml = `<span class="medal-pill gold">🥇 #01 Vàng</span>`;
+        } else if (rank === 2) {
+          rankHtml = `<span class="medal-pill silver">🥈 #02 Bạc</span>`;
+        } else if (rank === 3) {
+          rankHtml = `<span class="medal-pill bronze">🥉 #03 Đồng</span>`;
+        }
+
+        const rowClasses = [];
+        if (s.id === appState.selectedId) rowClasses.push(`selected-row`);
+        if (s.id === latestAddedId) rowClasses.push(`new-entry`);
+
+        const scoreClass = s.score === 100 ? `score-pill perfect` : `score-pill`;
+
+        return `<tr class="${rowClasses.join(` `)}" onclick="selectStudent('${escapeHtml(s.id)}')">
+          <td class="rank-cell">${rankHtml}</td>
+          <td>
+            <div class="student-cell-name">${escapeHtml(s.name)}</div>
+            <div class="student-cell-sub">Gửi lúc ${escapeHtml(s.submittedAt)}</div>
+          </td>
+          <td><span class="data-label">${escapeHtml(s.className)}</span></td>
+          <td class="num-col"><span class="${scoreClass}">${s.score}/100</span></td>
+          <td class="num-col">${formatSeconds(s.timeSec)}</td>
+          <td><span class="pillar-chip">${escapeHtml(s.topPillar)}</span></td>
+          <td>${escapeHtml(getStudentBadge(s))}</td>
+        </tr>`;
+      }).join(``);
+    }
+
+    function renderStudentDetail() {
+      const box = document.getElementById(`student-detail-card`);
+      if (!box) return;
+
+      const ranked = getRankedSubmissions(appState.submissions);
+      let student = appState.submissions.find((s) => s.id === appState.selectedId);
+      if (!student && ranked.length > 0) {
+        student = ranked[0];
+        appState.selectedId = student.id;
+      }
+
+      if (!student) {
+        box.innerHTML = `<div class="data-label">Chọn một học sinh trong bảng để xem chi tiết năng lực 5T và Cam kết tử tế.</div>`;
+        return;
+      }
+
+      const pillarKeys = [`Tôn trọng`, `Tử tế`, `Thận trọng`, `Tra cứu`, `Trách nhiệm`];
+      const barsHtml = pillarKeys.map((k) => {
+        const val = student.pillars && typeof student.pillars[k] === `number` ? student.pillars[k] : student.score;
+        return `<div class="mini-pillar">
+          <div style="display: flex; justify-content: space-between; gap: 4px; font-size: 0.78rem;">
+            <span>${escapeHtml(k)}</span>
+            <span class="data-label">${val}%</span>
+          </div>
+          <div class="mini-bar-track">
+            <div class="mini-bar-fill" style="width: ${val}%;"></div>
+          </div>
+        </div>`;
+      }).join(``);
+
+      box.innerHTML = `
+        <div class="detail-top">
+          <div>
+            <span class="data-label">Chi tiết bài làm &amp; Cam kết số</span>
+            <div style="font-weight: 700; font-size: 1.05rem;">${escapeHtml(student.name)} · Lớp ${escapeHtml(student.className)}</div>
+          </div>
+          <div style="display: flex; gap: var(--space-sm); align-items: center;">
+            <span class="score-pill ${student.score === 100 ? `perfect` : ``}">${student.score}/100 điểm</span>
+            <span class="data-label">⏱ ${formatSeconds(student.timeSec)}</span>
+          </div>
+        </div>
+        <div class="detail-bars">${barsHtml}</div>
+        <blockquote class="commitment-quote">“${escapeHtml(student.commitment)}”</blockquote>
+      `;
+    }
+
+    function renderPillarsChart() {
+      const canvas = document.getElementById(`pillars-chart`);
+      if (!canvas) return;
+      if (typeof Chart === `undefined`) return;
+
+      const keys = [`Tôn trọng`, `Tử tế`, `Thận trọng`, `Tra cứu`, `Trách nhiệm`];
+      const all = appState.submissions;
+      const averages = keys.map((k) => {
+        if (!all.length) return 0;
+        const total = all.reduce((sum, s) => sum + ((s.pillars && s.pillars[k]) || s.score), 0);
+        return Math.round(total / all.length);
+      });
+
+      const primaryColor = getThemeToken(`--data-1`);
+      const sageColor = getThemeToken(`--data-2`);
+      const gridColor = getThemeToken(`--outline-variant`);
+      const textColor = getThemeToken(`--on-surface-variant`);
+      const onSurfaceColor = getThemeToken(`--on-surface`);
+
+      const barColors = averages.map((v) => (v >= 90 ? sageColor : primaryColor));
+
+      if (pillarsChart) {
+        pillarsChart.data.datasets[0].data = averages;
+        pillarsChart.data.datasets[0].backgroundColor = barColors;
+        pillarsChart.update(`none`);
+        return;
+      }
+
+      pillarsChart = new Chart(canvas, {
+        type: `bar`,
+        data: {
+          labels: keys,
+          datasets: [{
+            label: `Tỷ lệ đạt (%)`,
+            data: averages,
+            backgroundColor: barColors,
+            borderRadius: 4,
+            barPercentage: 0.62
+          }]
+        },
+        options: {
+          indexAxis: `y`,
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => ` Trung bình lớp: ${ctx.parsed.x}%`
+              }
+            }
+          },
+          scales: {
+            x: {
+              min: 0,
+              max: 100,
+              grid: { color: gridColor },
+              ticks: {
+                color: textColor,
+                font: { family: `JetBrains Mono`, size: 11 },
+                callback: (v) => `${v}%`
+              }
+            },
+            y: {
+              grid: { display: false },
+              ticks: {
+                color: onSurfaceColor,
+                font: { family: `Be Vietnam Pro`, size: 12, weight: `600` }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function renderFirebaseFeed() {
+      const listEl = document.getElementById(`firebase-feed`);
+      const jsonEl = document.getElementById(`firebase-json-preview`);
+      const latencyEl = document.getElementById(`latency-readout`);
+
+      const events = appState.feedEvents;
+      const latestSub = appState.submissions.slice().sort((a, b) => b.seq - a.seq)[0];
+
+      if (listEl) {
+        if (events.length === 0 && latestSub) {
+          listEl.innerHTML = `<li class="feed-item">
+            <div class="feed-meta"><span>snapshot · /tin7_bai5/submissions</span><span>${escapeHtml(latestSub.submittedAt)}</span></div>
+            <div class="feed-msg">Đã tải ${appState.submissions.length} bản ghi ban đầu từ kho dữ liệu lớp 7.</div>
+          </li>`;
+        } else {
+          listEl.innerHTML = events.slice(0, 5).map((ev) => {
+            const cls = ev.score === 100 ? `feed-item perfect-event` : `feed-item`;
+            return `<li class="${cls}">
+              <div class="feed-meta">
+                <span>child_added · ${escapeHtml(ev.nodeId)}</span>
+                <span>${escapeHtml(ev.time)} · ${ev.latency}ms</span>
+              </div>
+              <div class="feed-msg"><strong>${escapeHtml(ev.name)}</strong> (${escapeHtml(ev.className)}) — <strong>${ev.score}/100</strong> (${formatSeconds(ev.timeSec)})</div>
+            </li>`;
+          }).join(``);
+        }
+      }
+
+      if (latencyEl && events.length > 0) {
+        latencyEl.textContent = `${events[0].latency} ms`;
+      }
+
+      if (jsonEl && latestSub) {
+        const previewObj = {
+          ref: `/thcs_tan_binh/tin7_bai5/submissions/${latestSub.id}`,
+          event: `child_added`,
+          payload: {
+            hocSinh: latestSub.name,
+            lop: latestSub.className,
+            diem: latestSub.score,
+            thoiGianGiay: latestSub.timeSec,
+            tram5T: latestSub.topPillar,
+            camKetTuTe: true
+          }
+        };
+        jsonEl.textContent = JSON.stringify(previewObj, null, 2);
+      }
+    }
+
+    function renderAll() {
+      updateHeaderControls();
+      renderKpis();
+      renderPodium();
+      renderLeaderboardTable();
+      renderStudentDetail();
+      renderPillarsChart();
+      renderFirebaseFeed();
+    }
+
+    /* =========================================================================
+       MÔ PHỎNG LUỒNG FIREBASE REALTIME DATABASE
+       ========================================================================= */
+    function buildSimulatedSubmission(forcePerfect) {
+      const usedNames = new Set(appState.submissions.map((s) => s.name));
+      let candidates = SIMULATED_POOL.filter((p) => !usedNames.has(p.name));
+      if (candidates.length === 0) candidates = SIMULATED_POOL;
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+
+      const scorePool = [80, 85, 90, 90, 95, 95, 100];
+      const score = forcePerfect ? 100 : scorePool[Math.floor(Math.random() * scorePool.length)];
+      const timeSec = forcePerfect
+        ? 88 + Math.floor(Math.random() * 48)
+        : 105 + Math.floor(Math.random() * 85);
+
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, `0`);
+      const mm = String(now.getMinutes()).padStart(2, `0`);
+      const ss = String(now.getSeconds()).padStart(2, `0`);
+      const seq = appState.nextSeq++;
+      const id = `fb-${100 + seq}`;
+
+      const makePillarScore = (pillarName) => {
+        if (score === 100) return 100;
+        if (pillarName === pick.topPillar) return Math.min(100, score + 5);
+        return Math.max(70, Math.min(100, score + (Math.random() > 0.5 ? 0 : -5)));
+      };
+
+      return {
+        id,
+        name: pick.name,
+        className: pick.className,
+        score,
+        timeSec,
+        topPillar: pick.topPillar,
+        pillars: {
+          'Tôn trọng': makePillarScore(`Tôn trọng`),
+          'Tử tế': makePillarScore(`Tử tế`),
+          'Thận trọng': makePillarScore(`Thận trọng`),
+          'Tra cứu': makePillarScore(`Tra cứu`),
+          'Trách nhiệm': makePillarScore(`Trách nhiệm`)
+        },
+        commitment: pick.commitment,
+        submittedAt: `${hh}:${mm}:${ss}`,
+        seq
+      };
+    }
+
+    function pushSubmission(newItem) {
+      const existingIdx = appState.submissions.findIndex(
+        (s) => s.name.toLowerCase() === newItem.name.toLowerCase() && s.className === newItem.className
+      );
+
+      if (existingIdx >= 0) {
+        const prev = appState.submissions[existingIdx];
+        if (newItem.score > prev.score || (newItem.score === prev.score && newItem.timeSec < prev.timeSec)) {
+          appState.submissions[existingIdx] = newItem;
+        } else {
+          appState.submissions[existingIdx].submittedAt = newItem.submittedAt;
+          appState.submissions[existingIdx].seq = newItem.seq;
+        }
+      } else {
+        appState.submissions.push(newItem);
+      }
+
+      latestAddedId = newItem.id;
+      appState.selectedId = newItem.id;
+
+      const latency = 18 + Math.floor(Math.random() * 29);
+      appState.feedEvents.unshift({
+        nodeId: newItem.id,
+        name: newItem.name,
+        className: newItem.className,
+        score: newItem.score,
+        timeSec: newItem.timeSec,
+        time: newItem.submittedAt,
+        latency
+      });
+      if (appState.feedEvents.length > 15) appState.feedEvents.length = 15;
+
+      renderAll();
+      persistState();
+
+      if (newItem.score === 100) {
+        triggerMaxScoreCelebration(newItem);
+      } else {
+        playPingSound();
+      }
+    }
+
+    function simulateSingleSubmission(forcePerfect) {
+      const sub = buildSimulatedSubmission(Boolean(forcePerfect));
+      pushSubmission(sub);
+    }
+
+    function updateStreamUi() {
+      const btnText = document.getElementById(`stream-btn-text`);
+      const dot = document.getElementById(`stream-dot`);
+      const statusText = document.getElementById(`stream-status-text`);
+      if (btnText) {
+        btnText.textContent = streamRunning ? `Tạm dừng nhận bài` : `Bắt đầu nhận bài thời gian thực`;
+      }
+      if (dot) dot.classList.toggle(`active`, streamRunning);
+      if (statusText) {
+        statusText.textContent = streamRunning
+          ? `Đang lắng nghe Firebase · ${(appState.streamSpeedMs / 1000).toFixed(1)}s`
+          : `Đang tạm dừng · child_added`;
+      }
+    }
+
+    function toggleFirebaseStream() {
+      streamRunning = !streamRunning;
+      if (streamRunning) {
+        if (streamTimerId) clearInterval(streamTimerId);
+        streamTimerId = setInterval(() => {
+          simulateSingleSubmission(false);
+        }, appState.streamSpeedMs);
+      } else {
+        if (streamTimerId) {
+          clearInterval(streamTimerId);
+          streamTimerId = null;
+        }
+      }
+      updateStreamUi();
+    }
+
+    function changeStreamSpeed(val) {
+      appState.streamSpeedMs = Number(val) || 3200;
+      if (streamRunning) {
+        clearInterval(streamTimerId);
+        streamTimerId = setInterval(() => {
+          simulateSingleSubmission(false);
+        }, appState.streamSpeedMs);
+      }
+      updateStreamUi();
+      persistState();
+    }
+
+    /* =========================================================================
+       TƯƠNG TÁC BỘ LỌC, NHẬP TAY, SMART TV, XUẤT CSV, KHÔI PHỤC
+       ========================================================================= */
+    function handleFilterChange() {
+      const searchEl = document.getElementById(`search-student`);
+      const classEl = document.getElementById(`filter-class`);
+      const sortEl = document.getElementById(`filter-sort`);
+
+      appState.searchQuery = searchEl ? searchEl.value : ``;
+      appState.filterClass = classEl ? classEl.value : `ALL`;
+      appState.sortMode = sortEl ? sortEl.value : `rank`;
+
+      renderLeaderboardTable();
+    }
+
+    function selectStudent(id) {
+      appState.selectedId = id;
+      renderLeaderboardTable();
+      renderStudentDetail();
+    }
+
+    function toggleTvMode() {
+      appState.tvMode = !appState.tvMode;
+      updateHeaderControls();
+      persistState();
+    }
+
+    function toggleManualDrawer() {
+      const drawer = document.getElementById(`manual-drawer`);
+      if (!drawer) return;
+      drawer.classList.toggle(`open`);
+    }
+
+    function submitManualStudent(event) {
+      event.preventDefault();
+      const nameEl = document.getElementById(`manual-name`);
+      const classEl = document.getElementById(`manual-class`);
+      const scoreEl = document.getElementById(`manual-score`);
+      const timeEl = document.getElementById(`manual-time`);
+      const pillarEl = document.getElementById(`manual-pillar`);
+      const fbEl = document.getElementById(`manual-feedback`);
+
+      const name = nameEl ? nameEl.value.trim() : ``;
+      const className = classEl ? classEl.value : `7A1`;
+      const score = scoreEl ? Number(scoreEl.value) : 100;
+      const timeSec = timeEl ? Number(timeEl.value) : 120;
+      const topPillar = pillarEl ? pillarEl.value : `Tử tế`;
+
+      if (!name || name.length < 2) {
+        if (fbEl) {
+          fbEl.className = `form-feedback error`;
+          fbEl.textContent = `Vui lòng nhập đầy đủ họ và tên học sinh (ít nhất 2 ký tự).`;
+        }
+        return;
+      }
+      if (Number.isNaN(score) || score < 0 || score > 100) {
+        if (fbEl) {
+          fbEl.className = `form-feedback error`;
+          fbEl.textContent = `Điểm số phải nằm trong khoảng từ 0 đến 100.`;
+        }
+        return;
+      }
+
+      const now = new Date();
+      const submittedAt = `${String(now.getHours()).padStart(2, `0`)}:${String(now.getMinutes()).padStart(2, `0`)}:${String(now.getSeconds()).padStart(2, `0`)}`;
+      const seq = appState.nextSeq++;
+      const newStudent = {
+        id: `fb-${100 + seq}`,
+        name,
+        className,
+        score,
+        timeSec: Math.max(20, timeSec),
+        topPillar,
+        pillars: {
+          'Tôn trọng': score,
+          'Tử tế': score,
+          'Thận trọng': score,
+          'Tra cứu': score,
+          'Trách nhiệm': score
+        },
+        commitment: `Cam kết thực hành 5T: Tôn trọng — Tử tế — Thận trọng — Tra cứu — Trách nhiệm trên không gian mạng.`,
+        submittedAt,
+        seq
+      };
+
+      pushSubmission(newStudent);
+
+      if (nameEl) nameEl.value = ``;
+      if (fbEl) {
+        fbEl.className = `form-feedback`;
+        fbEl.textContent = `Đã cập nhật kết quả của ${name} (${className}) lên Bảng Vàng!`;
+      }
+    }
+
+    function exportCsv() {
+      const ranked = getRankedSubmissions(appState.submissions);
+      const header = [`Hạng`, `Họ và tên`, `Lớp`, `Điểm (100)`, `Thời gian`, `Trạm 5T nổi bật`, `Danh hiệu`, `Giờ nộp`];
+      const rows = ranked.map((s, idx) => [
+        idx + 1,
+        `"${s.name.replace(/"/g, `""`)}"`,
+        s.className,
+        s.score,
+        formatSeconds(s.timeSec),
+        `"${s.topPillar}"`,
+        `"${getStudentBadge(s)}"`,
+        s.submittedAt
+      ].join(`,`));
+
+      const csvContent = `\uFEFF` + [header.join(`,`), ...rows].join(`\n`);
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.triggerFileDownload === `function`) {
+        window.notebookAppApi.triggerFileDownload({
+          content: csvContent,
+          contentType: `text/csv`,
+          encoding: `UTF-8`,
+          filename: `Bang_vang_Bai5_Ung_xu_tren_mang.csv`
+        });
+      } else {
+        const blob = new Blob([csvContent], { type: `text/csv;charset=utf-8;` });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement(`a`);
+        a.href = url;
+        a.download = `Bang_vang_Bai5_Ung_xu_tren_mang.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    function handleResetClick(btn) {
+      if (!btn) return;
+      if (btn.dataset.armed !== `true`) {
+        btn.dataset.armed = `true`;
+        btn.classList.add(`btn-danger-armed`);
+        btn.textContent = `Bấm lại để xác nhận khôi phục`;
+        setTimeout(() => {
+          if (btn.dataset.armed === `true`) {
+            btn.dataset.armed = `false`;
+            btn.classList.remove(`btn-danger-armed`);
+            btn.textContent = `Khôi phục mẫu`;
+          }
+        }, 4000);
+        return;
+      }
+
+      btn.dataset.armed = `false`;
+      btn.classList.remove(`btn-danger-armed`);
+      btn.textContent = `Khôi phục mẫu`;
+
+      if (streamRunning) toggleFirebaseStream();
+      appState.submissions = JSON.parse(JSON.stringify(INITIAL_SUBMISSIONS));
+      appState.selectedId = `fb-101`;
+      appState.nextSeq = 11;
+      appState.feedEvents = [];
+      latestAddedId = null;
+      dismissCelebration();
+      renderAll();
+      persistState();
+    }
+
+    /* =========================================================================
+       LƯU TRẠNG THÁI QUA GEMINI NOTEBOOK SHIM API
+       ========================================================================= */
+    async function persistState() {
+      try {
+        if (window.notebookAppApi && typeof window.notebookAppApi.setAppState === `function`) {
+          await window.notebookAppApi.setAppState({
+            submissions: appState.submissions,
+            selectedId: appState.selectedId,
+            soundEnabled: appState.soundEnabled,
+            tvMode: appState.tvMode,
+            streamSpeedMs: appState.streamSpeedMs,
+            nextSeq: appState.nextSeq,
+            feedEvents: appState.feedEvents
+          });
+        }
+      } catch (err) {
+        /* Bỏ qua lỗi lưu khi chạy ngoại tuyến ngoài sandbox */
+      }
+    }
+
+    async function initApp() {
+      try {
+        if (window.notebookAppApi && typeof window.notebookAppApi.getAppState === `function`) {
+          const saved = await window.notebookAppApi.getAppState();
+          if (saved && Array.isArray(saved.submissions) && saved.submissions.length > 0) {
+            appState.submissions = saved.submissions;
+            appState.selectedId = saved.selectedId || saved.submissions[0].id;
+            appState.soundEnabled = Boolean(saved.soundEnabled);
+            appState.tvMode = Boolean(saved.tvMode);
+            appState.streamSpeedMs = Number(saved.streamSpeedMs) || 3200;
+            appState.nextSeq = Number(saved.nextSeq) || (saved.submissions.length + 1);
+            appState.feedEvents = Array.isArray(saved.feedEvents) ? saved.feedEvents : [];
+          }
+        }
+      } catch (err) {
+        /* Dùng dữ liệu mẫu ban đầu */
+      }
+
+      renderAll();
+      updateStreamUi();
+
+      if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === `function`) {
+        window.notebookAppApi.notifyAppReady();
+      }
+    }
+
+    document.addEventListener(`DOMContentLoaded`, initApp);
+  </script>
+</body>
+</html>
