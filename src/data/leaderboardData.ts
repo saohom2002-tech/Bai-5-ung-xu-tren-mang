@@ -2,7 +2,17 @@ import type { LessonState } from '../types/lesson';
 import { getCaseScore, getQuizScore, getSortScore } from '../utils/storage';
 
 export type PillarKey = 'Tôn trọng' | 'Tử tế' | 'Thận trọng' | 'Tra cứu' | 'Trách nhiệm';
-export type ClassOption = '7A1' | '7A2' | '7A3' | '7A4' | '7A5';
+export type ClassOption =
+  | '7/1'
+  | '7/2'
+  | '7/3'
+  | '7/4'
+  | '7/5'
+  | '7/6'
+  | '7/7'
+  | '7/8'
+  | '7/9'
+  | '7/10';
 
 export const PILLAR_KEYS: readonly PillarKey[] = [
   'Tôn trọng',
@@ -13,11 +23,16 @@ export const PILLAR_KEYS: readonly PillarKey[] = [
 ] as const;
 
 export const CLASS_OPTIONS: readonly ClassOption[] = [
-  '7A1',
-  '7A2',
-  '7A3',
-  '7A4',
-  '7A5',
+  '7/1',
+  '7/2',
+  '7/3',
+  '7/4',
+  '7/5',
+  '7/6',
+  '7/7',
+  '7/8',
+  '7/9',
+  '7/10',
 ] as const;
 
 export interface LeaderboardSubmission {
@@ -52,13 +67,13 @@ export interface LeaderboardPersistedState {
   feedEvents: FeedEvent[];
 }
 
-export const LEADERBOARD_STORAGE_KEY = 'online-tu-te-b5-leaderboard-v1';
+export const LEADERBOARD_STORAGE_KEY = 'online-tu-te-b5-leaderboard-v2';
 
 export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-101',
     name: 'Nguyễn Ngọc Minh Anh',
-    className: '7A1',
+    className: '7/1',
     score: 100,
     timeSec: 114,
     topPillar: 'Tử tế',
@@ -77,7 +92,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-102',
     name: 'Trần Gia Bảo',
-    className: '7A2',
+    className: '7/2',
     score: 100,
     timeSec: 129,
     topPillar: 'Thận trọng',
@@ -96,7 +111,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-103',
     name: 'Lê Hoàng Nam',
-    className: '7A1',
+    className: '7/3',
     score: 95,
     timeSec: 121,
     topPillar: 'Tra cứu',
@@ -115,7 +130,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-104',
     name: 'Phạm Thảo Nhi',
-    className: '7A3',
+    className: '7/4',
     score: 95,
     timeSec: 142,
     topPillar: 'Tôn trọng',
@@ -134,7 +149,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-105',
     name: 'Võ Quốc Huy',
-    className: '7A2',
+    className: '7/5',
     score: 90,
     timeSec: 136,
     topPillar: 'Trách nhiệm',
@@ -153,7 +168,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-106',
     name: 'Đặng Khánh Linh',
-    className: '7A4',
+    className: '7/6',
     score: 90,
     timeSec: 158,
     topPillar: 'Tử tế',
@@ -172,7 +187,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-107',
     name: 'Bùi Tấn Phát',
-    className: '7A3',
+    className: '7/7',
     score: 85,
     timeSec: 148,
     topPillar: 'Thận trọng',
@@ -191,7 +206,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-108',
     name: 'Huỳnh Ngọc Hân',
-    className: '7A5',
+    className: '7/8',
     score: 85,
     timeSec: 164,
     topPillar: 'Tôn trọng',
@@ -210,7 +225,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-109',
     name: 'Ngô Đức Thịnh',
-    className: '7A4',
+    className: '7/9',
     score: 80,
     timeSec: 171,
     topPillar: 'Tra cứu',
@@ -229,7 +244,7 @@ export const INITIAL_SUBMISSIONS: LeaderboardSubmission[] = [
   {
     id: 'fb-110',
     name: 'Trịnh Phương Uyên',
-    className: '7A5',
+    className: '7/10',
     score: 80,
     timeSec: 185,
     topPillar: 'Trách nhiệm',
@@ -257,56 +272,56 @@ export interface SimulatedStudentSeed {
 export const SIMULATED_POOL: SimulatedStudentSeed[] = [
   {
     name: 'Nguyễn Hoàng Thiên Ân',
-    className: '7A1',
+    className: '7/1',
     topPillar: 'Tử tế',
     commitment:
       'Thế giới ảo nhưng cảm xúc thật — luôn lắng nghe và bảo vệ bạn bè trước bạo lực mạng.',
   },
   {
     name: 'Lý Minh Quân',
-    className: '7A2',
+    className: '7/2',
     topPillar: 'Thận trọng',
     commitment:
       'Không chia sẻ địa chỉ nhà, số điện thoại hay mật khẩu tài khoản cho người lạ.',
   },
   {
     name: 'Trương Bảo Ngọc',
-    className: '7A3',
+    className: '7/4',
     topPillar: 'Tra cứu',
     commitment:
       'Kiểm chứng trước, chia sẻ sau — hỏi thầy cô hoặc website trường khi gặp tin đồn.',
   },
   {
     name: 'Phan Anh Khoa',
-    className: '7A1',
+    className: '7/5',
     topPillar: 'Trách nhiệm',
     commitment:
       'Không thức khuya chơi game trực tuyến, lập thời gian biểu sử dụng Internet hợp lý.',
   },
   {
     name: 'Đoàn Ngọc Diệp',
-    className: '7A4',
+    className: '7/6',
     topPillar: 'Tôn trọng',
     commitment:
       'Sử dụng ngôn ngữ lịch sự, biểu tượng cảm xúc thân thiện khi thảo luận nhóm.',
   },
   {
     name: 'Lâm Gia Hưng',
-    className: '7A5',
+    className: '7/7',
     topPillar: 'Thận trọng',
     commitment:
       'Đóng ngay trang web có nội dung xấu và nhờ ba mẹ, thầy cô tư vấn kịp thời.',
   },
   {
     name: 'Vũ Khánh Vy',
-    className: '7A2',
+    className: '7/9',
     topPillar: 'Tử tế',
     commitment:
       'Chạm màn hình — lan tỏa yêu thương, không hùa theo bình luận chế giễu người khác.',
   },
   {
     name: 'Tô Nhật Minh',
-    className: '7A3',
+    className: '7/10',
     topPillar: 'Trách nhiệm',
     commitment:
       'Nghĩ trước khi đăng, có sai có sửa — giữ gìn hình ảnh văn minh học sinh THCS Tân Bình.',
@@ -405,11 +420,11 @@ export function buildSubmissionFromLessonState(
   nextSeq: number
 ): LeaderboardSubmission {
   const rawIdentity = (lessonState.fields.identity || '').trim();
-  const classMatch = rawIdentity.match(/7A[1-5]/i);
-  const className = classMatch ? classMatch[0].toUpperCase() : '7A1';
+  const classMatch = rawIdentity.match(/7\/(10|[1-9])\b/);
+  const className = classMatch ? `7/${classMatch[1]}` : '7/1';
   const cleanedName = rawIdentity
-    .replace(/[-–—,|/]*\s*lớp\s*7A[1-5]/i, '')
-    .replace(/[-–—,|/]*\s*7A[1-5]/i, '')
+    .replace(/[-–—,|/]*\s*lớp\s*7\/(10|[1-9])\b/i, '')
+    .replace(/[-–—,|]*\s*7\/(10|[1-9])\b/i, '')
     .trim();
   const name = cleanedName || 'Học sinh / Nhóm hiện tại';
 
