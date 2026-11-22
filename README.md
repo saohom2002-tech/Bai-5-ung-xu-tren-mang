@@ -1,1 +1,1 @@
-Học sinh hoàn thành các phiếu học tập
+Học sinh xem lần lượt các video clip và hoàn thành các phiếu học tập.
