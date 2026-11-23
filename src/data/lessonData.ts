@@ -347,6 +347,8 @@ export const EMOTION_VIDEO_SRC =
   '/assets/aistudio/VIDEO_The_hien_cam_xuc_ca_nhan_tren_mang_XH_6dabdd51.mp4?v=2';
 export const INTERNET_RISKS_VIDEO_SRC =
   '/assets/aistudio/video_mat_trai_Internet_d35350fa.mp4';
+export const SELF_STUDY_GUIDE_VIDEO_SRC =
+  '/assets/aistudio/Video_tu_hoc_Bai5_Ung_xu_tren_mang_ecc95476.mp4';
 export const APPLICATION_TASK_IMAGE_SRC = '/assets/aistudio/image_5eaad8f1.png';
 
 export const APPLICATION_PRODUCT_TYPES: string[] = [

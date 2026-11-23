@@ -396,6 +396,7 @@ ul {
   header,
   nav,
   .hero,
+  .guide-video-card,
   footer,
   button,
   #notice {
@@ -648,6 +649,61 @@ ul {
     aspect-ratio: 16 / 9;
     background: #163e35;
     border-radius: 12px;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .guide-toggle-btn {
+    background: #ffffff;
+    border: 1px solid #b6a6e6;
+    color: #4a3299;
+    font-weight: 700;
+  }
+  .guide-toggle-btn:hover {
+    background: #efeafd;
+    border-color: #7d5ad6;
+  }
+  .guide-video-card {
+    margin: 0 0 22px;
+    padding: 22px 24px;
+    border-radius: 20px;
+    background: linear-gradient(125deg, #e7f0ff 0%, #f2e8ff 100%);
+    border: 1px solid #cfc4ee;
+  }
+  .guide-video-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .guide-video-title {
+    margin: 4px 0 0;
+    font-size: 22px;
+    color: #362c84;
+  }
+  .guide-video-close {
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #ffffff;
+    border: 1px solid #c9bee9;
+    color: #433290;
+  }
+  .guide-video-meta {
+    margin: 10px 0 12px;
+  }
+  .guide-video-note {
+    padding: 12px 15px;
+    border-left: 4px solid #6943c6;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #2c2d54;
+    font-size: 15px;
   }
   .app-task-card {
     margin: 24px 0;
