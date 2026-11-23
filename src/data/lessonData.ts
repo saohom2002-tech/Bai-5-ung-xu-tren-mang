@@ -42,6 +42,17 @@ export const RULES_5K: string[] = [
   'ấn nút like hay share đối với những tin xấu, tin độc, tin phản cảm gây ảnh hưởng đến hình ảnh của người khác.',
 ];
 
+export const SELF_ASSESSMENT_ITEMS: string[] = [
+  'Em biết giao tiếp lịch sự và tôn trọng người khác trên mạng.',
+  'Em không bình luận xúc phạm hoặc chế giễu người khác.',
+  'Em không tự ý truy cập tài khoản của người khác.',
+  'Em biết đóng trang web có nội dung xấu, không phù hợp.',
+  'Em biết nhờ người lớn giúp đỡ khi gặp vấn đề trên mạng.',
+  'Em biết kiểm soát thời gian sử dụng Internet.',
+  'Em biết sử dụng AI để tham khảo và kiểm chứng thông tin.',
+  'Em có trách nhiệm với nội dung mình đăng tải.',
+];
+
 export const SCENARIO_CASES: ScenarioCase[] = [
   {
     q: 'Trong nhóm chat, có bạn tung tin đồn về An rồi nhắn “Share nhanh!”. An rất buồn. Em sẽ phản hồi thế nào?',

@@ -3,6 +3,7 @@ import {
   GROUP_TASKS,
   QUIZ_QUESTIONS,
   SCENARIO_CASES,
+  SELF_ASSESSMENT_ITEMS,
 } from '../data/lessonData';
 import type { LessonState } from '../types/lesson';
 
@@ -119,6 +120,23 @@ export function getCaseScore(state: LessonState): number {
   return SCENARIO_CASES.filter((c, i) => state.scenario[i] === c.ok).length;
 }
 
+export function getSelfAssessmentChecked(state: LessonState): number[] {
+  try {
+    const parsed = JSON.parse(state.fields.self_assessment_checked || '[]');
+    if (!Array.isArray(parsed)) return [];
+    return Array.from(
+      new Set(
+        parsed.filter(
+          (n): n is number =>
+            Number.isInteger(n) && n >= 0 && n < SELF_ASSESSMENT_ITEMS.length
+        )
+      )
+    ).sort((a, b) => a - b);
+  } catch {
+    return [];
+  }
+}
+
 export function buildFullReport(state: LessonState): string {
   const essayLabels: Array<[string, string]> = [
     ['empathy', 'Cảm xúc của An'],
@@ -131,6 +149,8 @@ export function buildFullReport(state: LessonState): string {
     ['help', 'Giúp bạn'],
   ];
 
+  const checkedSelfEval = getSelfAssessmentChecked(state);
+
   return [
     'PHIẾU KẾT QUẢ — BÀI 5: ỨNG XỬ TRÊN MẠNG',
     `Tên / nhóm / lớp: ${state.fields.identity || '(chưa điền)'}`,
@@ -141,6 +161,7 @@ export function buildFullReport(state: LessonState): string {
     `Phân loại: ${state.sortChecked ? `${getSortScore(state)}/10` : 'chưa kiểm tra'}`,
     `Cây xanh: ${state.tree.length}/4`,
     `Kiểm tra: ${state.submitted ? `${getQuizScore(state)}/8` : 'chưa nộp'}`,
+    `Phiếu tự đánh giá: ${checkedSelfEval.length}/${SELF_ASSESSMENT_ITEMS.length} việc đã thực hiện`,
     '',
     ...SCENARIO_CASES.map(
       (c, i) => `Tình huống ${i + 1}: ${c.a[state.scenario[i]] || 'chưa chọn'}`
@@ -170,6 +191,15 @@ export function buildFullReport(state: LessonState): string {
     '',
     'C. HOẠT ĐỘNG 2 — THỬ THÁCH 5 NHÓM',
     ...GROUP_TASKS.map((_, n) => buildGroupDraft(state, n)),
+    '',
+    'D. PHIẾU TỰ ĐÁNH GIÁ CỦA HỌC SINH',
+    `Đã đánh dấu: ${checkedSelfEval.length}/${SELF_ASSESSMENT_ITEMS.length} việc`,
+    ...SELF_ASSESSMENT_ITEMS.map(
+      (item, idx) => `${checkedSelfEval.includes(idx) ? '[x]' : '[ ]'} ${item}`
+    ),
+    '',
+    'Điều em sẽ thay đổi để sử dụng Internet tốt hơn:',
+    state.fields.self_assessment_change?.trim() || '(chưa viết)',
     '',
     'Kết quả tự luyện trên thiết bị học sinh; chưa gửi tự động cho giáo viên.',
   ].join('\n');

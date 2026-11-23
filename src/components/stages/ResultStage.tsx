@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { SELF_ASSESSMENT_ITEMS } from '../../data/lessonData';
 import type { LessonState } from '../../types/lesson';
 import {
   buildFullReport,
   getCaseScore,
   getQuizScore,
+  getSelfAssessmentChecked,
   getSortScore,
   triggerFileDownload,
 } from '../../utils/storage';
@@ -27,6 +29,14 @@ export const ResultStage: React.FC<ResultStageProps> = ({
   const sortScore = getSortScore(state);
   const quizScore = getQuizScore(state);
   const caseScore = getCaseScore(state);
+  const checkedSelfEval = getSelfAssessmentChecked(state);
+
+  const handleToggleSelfEval = (idx: number, isChecked: boolean) => {
+    const next = isChecked
+      ? Array.from(new Set([...checkedSelfEval, idx])).sort((a, b) => a - b)
+      : checkedSelfEval.filter((n) => n !== idx);
+    onFieldChange('self_assessment_checked', JSON.stringify(next));
+  };
 
   const checklist: Array<[string, boolean]> = [
     ['Tên / mã nhóm', Boolean(state.fields.identity)],
@@ -37,6 +47,10 @@ export const ResultStage: React.FC<ResultStageProps> = ({
     [
       'Thông điệp và giúp bạn',
       Boolean(state.fields.slogan?.trim() && state.fields.help?.trim()),
+    ],
+    [
+      'Phiếu tự đánh giá của học sinh',
+      checkedSelfEval.length > 0 && Boolean(state.fields.self_assessment_change?.trim()),
     ],
   ];
 
@@ -101,13 +115,72 @@ export const ResultStage: React.FC<ResultStageProps> = ({
         onChange={(e) => onFieldChange('help', e.target.value)}
       />
 
+      <article className="self-eval-card" aria-labelledby="self-eval-heading">
+        <div className="self-eval-head">
+          <div>
+            <span className="num">TỰ ĐÁNH GIÁ · RÈN LUYỆN THÓI QUEN TỐT</span>
+            <h3 id="self-eval-heading" className="self-eval-title">
+              PHIẾU TỰ ĐÁNH GIÁ CỦA HỌC SINH
+            </h3>
+            <p className="self-eval-subtitle">
+              Đánh dấu vào những việc em đã thực hiện:
+            </p>
+          </div>
+          <span className="self-eval-count" aria-live="polite">
+            Đã đánh dấu: {checkedSelfEval.length}/{SELF_ASSESSMENT_ITEMS.length}
+          </span>
+        </div>
+
+        <progress
+          className="self-eval-meter"
+          value={checkedSelfEval.length}
+          max={SELF_ASSESSMENT_ITEMS.length}
+          aria-label="Tiến độ hoàn thành phiếu tự đánh giá"
+        />
+
+        <div
+          className="self-eval-list"
+          role="group"
+          aria-label="Danh sách các việc em đã thực hiện khi sử dụng Internet"
+        >
+          {SELF_ASSESSMENT_ITEMS.map((item, idx) => {
+            const isChecked = checkedSelfEval.includes(idx);
+            return (
+              <label
+                key={item}
+                className={`self-eval-item${isChecked ? ' is-checked' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  onChange={(e) => handleToggleSelfEval(idx, e.target.checked)}
+                />
+                <span>{item}</span>
+              </label>
+            );
+          })}
+        </div>
+
+        <label htmlFor="self_assessment_change" className="self-eval-change-label">
+          Điều em sẽ thay đổi để sử dụng Internet tốt hơn:
+        </label>
+        <textarea
+          id="self_assessment_change"
+          className="self-eval-textarea"
+          placeholder="Nhập điều em dự định thay đổi để sử dụng Internet an toàn, lành mạnh và hiệu quả hơn…"
+          value={state.fields.self_assessment_change || ''}
+          onChange={(e) => onFieldChange('self_assessment_change', e.target.value)}
+        />
+      </article>
+
       <div className="badge">
         {state.fields.identity || 'Chưa điền tên / mã nhóm'}
         <br />
         Phân loại: {state.sortChecked ? `${sortScore}/10` : 'chưa kiểm tra'} · Kiểm tra:{' '}
         {state.submitted ? `${quizScore}/8` : 'chưa nộp'}
         <br />
-        Cây xanh: {state.tree.length}/4 · Tình huống hợp lí: {caseScore}/3
+        Cây xanh: {state.tree.length}/4 · Tình huống hợp lí: {caseScore}/3 · Tự đánh giá:{' '}
+        {checkedSelfEval.length}/{SELF_ASSESSMENT_ITEMS.length}
       </div>
 
       <h3>Kiểm tra trước khi nộp</h3>
