@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { SELF_ASSESSMENT_ITEMS } from '../../data/lessonData';
+import {
+  APPLICATION_PRODUCT_TYPES,
+  APPLICATION_TASK_IMAGE_SRC,
+  SELF_ASSESSMENT_ITEMS,
+} from '../../data/lessonData';
 import type { LessonState } from '../../types/lesson';
 import {
   buildFullReport,
@@ -7,12 +11,14 @@ import {
   getQuizScore,
   getSelfAssessmentChecked,
   getSortScore,
+  STORAGE_KEY,
   triggerFileDownload,
 } from '../../utils/storage';
 
 interface ResultStageProps {
   state: LessonState;
   onFieldChange: (key: string, value: string) => void;
+  onFieldsBatchChange: (updates: Record<string, string | undefined>) => void;
   onResetAll: () => void;
   onOpenLeaderboard: () => void;
 }
@@ -20,10 +26,12 @@ interface ResultStageProps {
 export const ResultStage: React.FC<ResultStageProps> = ({
   state,
   onFieldChange,
+  onFieldsBatchChange,
   onResetAll,
   onOpenLeaderboard,
 }) => {
   const [confirmReset, setConfirmReset] = useState(false);
+  const [appImageStatus, setAppImageStatus] = useState('');
 
   const reportText = buildFullReport(state);
   const sortScore = getSortScore(state);
@@ -31,11 +39,82 @@ export const ResultStage: React.FC<ResultStageProps> = ({
   const caseScore = getCaseScore(state);
   const checkedSelfEval = getSelfAssessmentChecked(state);
 
+  const hasAppTaskWork = Boolean(
+    state.fields.app_task_idea?.trim() ||
+      state.fields.app_task_link?.trim() ||
+      state.fields.app_task_image
+  );
+
   const handleToggleSelfEval = (idx: number, isChecked: boolean) => {
     const next = isChecked
       ? Array.from(new Set([...checkedSelfEval, idx])).sort((a, b) => a - b)
       : checkedSelfEval.filter((n) => n !== idx);
     onFieldChange('self_assessment_checked', JSON.stringify(next));
+  };
+
+  const handleAppTaskImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (
+      !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
+      file.size > 8 * 1024 * 1024
+    ) {
+      setAppImageStatus('Chọn ảnh JPG, PNG hoặc WebP không quá 8 MB.');
+      e.target.value = '';
+      return;
+    }
+
+    setAppImageStatus('Đang chuẩn bị ảnh sản phẩm…');
+    const reader = new FileReader();
+    reader.onerror = () => setAppImageStatus('Không đọc được ảnh. Em hãy chọn lại.');
+    reader.onload = () => {
+      const im = new Image();
+      im.onerror = () => setAppImageStatus('Ảnh không hợp lệ. Em hãy chọn ảnh khác.');
+      im.onload = () => {
+        const canvas = document.createElement('canvas');
+        const scale = Math.min(1, 1000 / im.width, 1000 / im.height);
+        canvas.width = Math.max(1, Math.round(im.width * scale));
+        canvas.height = Math.max(1, Math.round(im.height * scale));
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+        const data = canvas.toDataURL('image/jpeg', 0.72);
+
+        try {
+          const testState: LessonState = {
+            ...state,
+            fields: {
+              ...state.fields,
+              app_task_image: data,
+              app_task_image_name: file.name,
+            },
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(testState));
+          onFieldsBatchChange({
+            app_task_image: data,
+            app_task_image_name: file.name,
+          });
+          setAppImageStatus('');
+        } catch {
+          setAppImageStatus(
+            'Bộ nhớ trình duyệt đã đầy. Các em hãy giữ ảnh gốc để gửi trực tiếp cho giáo viên hoặc dán lên Padlet.'
+          );
+        }
+      };
+      im.src = String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeAppTaskImage = () => {
+    onFieldsBatchChange({
+      app_task_image: undefined,
+      app_task_image_name: undefined,
+    });
+    setAppImageStatus('');
   };
 
   const checklist: Array<[string, boolean]> = [
@@ -51,6 +130,10 @@ export const ResultStage: React.FC<ResultStageProps> = ({
     [
       'Phiếu tự đánh giá của học sinh',
       checkedSelfEval.length > 0 && Boolean(state.fields.self_assessment_change?.trim()),
+    ],
+    [
+      'Bài tập 1 — Sản phẩm nhóm (khuyến khích, không bắt buộc)',
+      hasAppTaskWork,
     ],
   ];
 
@@ -114,6 +197,126 @@ export const ResultStage: React.FC<ResultStageProps> = ({
         value={state.fields.help || ''}
         onChange={(e) => onFieldChange('help', e.target.value)}
       />
+
+      <article className="app-task-card" aria-labelledby="app-task-heading">
+        <div className="app-task-head">
+          <div>
+            <span className="num">VẬN DỤNG MỞ RỘNG · HOẠT ĐỘNG NHÓM</span>
+            <h3 id="app-task-heading" className="app-task-title">
+              BÀI TẬP 1: TẠO SẢN PHẨM NHÓM VỀ CHỦ ĐỀ ỨNG XỬ TRÊN MẠNG
+            </h3>
+          </div>
+          <span className="app-task-optional-tag">
+            Khuyến khích thực hiện · Không bắt buộc
+          </span>
+        </div>
+
+        <p className="app-task-prompt">
+          <b>Bài tập 1:</b> Em hãy cùng một nhóm bạn của mình tạo ra một sản phẩm (áp phích, đoạn kịch ngắn, sơ đồ tư duy, bài trình chiếu,...) về chủ đề <b>Ứng xử trên mạng</b> để trình bày với các bạn trong lớp.
+        </p>
+
+        <div className="app-task-note">
+          <b>Ghi chú:</b> Hoạt động này <b>khuyến khích học sinh thực hiện, không bắt buộc</b>. Các nhóm hoàn thành và trình bày trước lớp sẽ được giáo viên tuyên dương và ghi nhận cộng điểm thực hành.
+        </div>
+
+        <figure className="app-task-figure">
+          <img
+            src={APPLICATION_TASK_IMAGE_SRC}
+            alt="Gợi ý Bài tập 1 Vận dụng: tạo sản phẩm áp phích, đoạn kịch ngắn, sơ đồ tư duy hoặc bài trình chiếu về chủ đề Ứng xử trên mạng"
+            className="app-task-suggestion-img"
+          />
+          <figcaption className="small app-task-caption">
+            Hình gợi ý minh họa cho sản phẩm nhóm (áp phích, tranh vẽ, sơ đồ tư duy, bài trình chiếu hoặc tiểu phẩm ngắn).
+          </figcaption>
+        </figure>
+
+        <div className="app-task-grid">
+          <div>
+            <label htmlFor="app_task_type" className="app-task-label">
+              Hình thức sản phẩm nhóm dự định làm
+            </label>
+            <select
+              id="app_task_type"
+              value={state.fields.app_task_type || ''}
+              onChange={(e) => onFieldChange('app_task_type', e.target.value)}
+            >
+              <option value="">-- Chọn hình thức sản phẩm --</option>
+              {APPLICATION_PRODUCT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="app_task_members" className="app-task-label">
+              Tên nhóm và các thành viên tham gia
+            </label>
+            <input
+              id="app_task_members"
+              type="text"
+              placeholder="Ví dụ: Nhóm 2 (7/1) — Minh Anh, Gia Bảo, Thảo Vy..."
+              value={state.fields.app_task_members || ''}
+              onChange={(e) => onFieldChange('app_task_members', e.target.value)}
+            />
+          </div>
+        </div>
+
+        <label htmlFor="app_task_idea" className="app-task-label">
+          Ý tưởng chính / nội dung trình bày của nhóm
+        </label>
+        <textarea
+          id="app_task_idea"
+          className="app-task-textarea"
+          placeholder="Mô tả ngắn gọn thông điệp chính, bố cục áp phích / nội dung kịch ngắn / các nhánh sơ đồ tư duy của nhóm…"
+          value={state.fields.app_task_idea || ''}
+          onChange={(e) => onFieldChange('app_task_idea', e.target.value)}
+        />
+
+        <label htmlFor="app_task_link" className="app-task-label">
+          Đường dẫn sản phẩm (Canva, Google Slides, Padlet, video…) — nếu có
+        </label>
+        <input
+          id="app_task_link"
+          type="url"
+          placeholder="https://..."
+          value={state.fields.app_task_link || ''}
+          onChange={(e) => onFieldChange('app_task_link', e.target.value)}
+        />
+
+        <label htmlFor="app_task_image" className="app-task-label">
+          Đính kèm ảnh chụp sản phẩm (JPG, PNG, WebP tối đa 8 MB) — nếu có
+        </label>
+        <input
+          id="app_task_image"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          onChange={handleAppTaskImage}
+        />
+
+        {appImageStatus && (
+          <p className="small" role="status">
+            {appImageStatus}
+          </p>
+        )}
+
+        {state.fields.app_task_image && (
+          <div className="app-task-preview">
+            <figure className="app-task-preview-figure">
+              <img
+                src={state.fields.app_task_image}
+                alt="Ảnh sản phẩm vận dụng của nhóm"
+                className="app-task-preview-img"
+              />
+              <figcaption className="small">{state.fields.app_task_image_name}</figcaption>
+            </figure>
+            <button type="button" onClick={removeAppTaskImage}>
+              Bỏ ảnh đã chọn
+            </button>
+          </div>
+        )}
+      </article>
 
       <article className="self-eval-card" aria-labelledby="self-eval-heading">
         <div className="self-eval-head">

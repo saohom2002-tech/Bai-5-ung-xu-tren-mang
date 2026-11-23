@@ -201,6 +201,13 @@ export function buildFullReport(state: LessonState): string {
     'Điều em sẽ thay đổi để sử dụng Internet tốt hơn:',
     state.fields.self_assessment_change?.trim() || '(chưa viết)',
     '',
+    'E. VẬN DỤNG MỞ RỘNG — BÀI TẬP 1 (KHUYẾN KHÍCH, KHÔNG BẮT BUỘC)',
+    `Hình thức sản phẩm: ${state.fields.app_task_type || '(chưa chọn)'}`,
+    `Nhóm & thành viên: ${state.fields.app_task_members?.trim() || '(chưa điền)'}`,
+    `Ý tưởng / nội dung trình bày:\n${state.fields.app_task_idea?.trim() || '(chưa thực hiện — phần khuyến khích)'}`,
+    `Liên kết sản phẩm: ${state.fields.app_task_link?.trim() || '(không có)'}`,
+    `Ảnh sản phẩm đính kèm: ${state.fields.app_task_image_name || '(không có)'}`,
+    '',
     'Kết quả tự luyện trên thiết bị học sinh; chưa gửi tự động cho giáo viên.',
   ].join('\n');
 }

@@ -250,6 +250,7 @@ export default function App() {
           <ResultStage
             state={state}
             onFieldChange={handleFieldChange}
+            onFieldsBatchChange={handleFieldsBatchChange}
             onResetAll={handleResetAll}
             onOpenLeaderboard={() => go(8)}
           />

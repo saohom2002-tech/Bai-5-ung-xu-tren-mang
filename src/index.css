@@ -649,6 +649,100 @@ ul {
     background: #163e35;
     border-radius: 12px;
   }
+  .app-task-card {
+    margin: 24px 0;
+    padding: 24px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fff9ea 0%, #fff2df 100%);
+    border: 1px solid #f0d39a;
+  }
+  .app-task-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .app-task-title {
+    margin: 6px 0 6px;
+    font-size: 20px;
+    color: #5b3711;
+  }
+  .app-task-optional-tag {
+    font-size: 13px;
+    font-weight: 700;
+    color: #854d0e;
+    background: #ffffff;
+    border: 1px solid #e7c278;
+    border-radius: 10px;
+    padding: 6px 12px;
+    white-space: nowrap;
+  }
+  .app-task-prompt {
+    margin: 10px 0 12px;
+    color: #2b2949;
+  }
+  .app-task-note {
+    padding: 12px 15px;
+    border-left: 4px solid #d97706;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    color: #5b3711;
+    font-size: 15px;
+    margin-bottom: 16px;
+  }
+  .app-task-figure {
+    margin: 16px 0 18px;
+    padding: 12px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #ecd4a5;
+  }
+  .app-task-suggestion-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+  .app-task-caption {
+    margin-top: 8px;
+    text-align: center;
+  }
+  .app-task-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .app-task-label {
+    margin: 14px 0 6px;
+    color: #5b3711;
+  }
+  .app-task-textarea {
+    min-height: 105px;
+    background: #ffffff;
+  }
+  .app-task-preview {
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #ecd4a5;
+  }
+  .app-task-preview-figure {
+    margin: 0 0 10px;
+  }
+  .app-task-preview-img {
+    display: block;
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+  }
+  @media (max-width: 750px) {
+    .app-task-grid {
+      grid-template-columns: 1fr;
+    }
+  }
   .self-eval-card {
     margin: 24px 0;
     padding: 24px;
